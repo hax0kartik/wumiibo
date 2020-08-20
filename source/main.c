@@ -71,6 +71,7 @@ void __ctru_exit(int rc) {
 }
 
 static u8 tag_state = 0;
+static Handle events[2] = {-1, -1};
 static u8 ALIGN(8) threadStack[0x1000] = {0};
 static u8 ALIGN(8) statbuf[0x800] = {0};
 static int sockfd = -1;
@@ -96,6 +97,7 @@ void sockrwThread(void *arg)
     { 
         if ((socListen(sockfd, 1)) != 0)
             CRASH;
+
         size_t len = sizeof(cli); 
         while(!data->done)
         {
@@ -183,6 +185,42 @@ void handle_commands(sockThreadStruct *data)
             //socClose(connfd);
             cmdbuf[0] = IPC_MakeHeader(cmdid, 1, 0);
             cmdbuf[1] = 0;
+            break;
+        }
+
+        case 5:
+        {
+            if(events[0] != -1)
+                svcSignalEvent(events[0]);
+            sockSendRecvData(data, cmdbuf);
+            break;
+        }
+
+        case 6:
+        {
+            if(events[1] != -1)
+                 svcSignalEvent(events[1]);
+            sockSendRecvData(data, cmdbuf);
+            break;
+        }
+
+        case 0xB: //GetTagInRangeEvent
+        {
+            svcCreateEvent(&events[0], RESET_ONESHOT);
+            cmdbuf[0] = IPC_MakeHeader(cmdid, 1, 2);
+            cmdbuf[1] = 0;
+            cmdbuf[2] = 0;
+            cmdbuf[3] = events[0];
+            break;
+        }
+
+        case 0xC: //GetTagOutOfRangeEvent
+        {
+            svcCreateEvent(&events[1], RESET_ONESHOT);
+            cmdbuf[0] = IPC_MakeHeader(cmdid, 1, 2);
+            cmdbuf[1] = 0;
+            cmdbuf[2] = 0;
+            cmdbuf[3] = events[1];
             break;
         }
 
@@ -279,7 +317,7 @@ int main() {
     if (R_FAILED(srvEnableNotification(hndNotification))) {
         svcBreak(USERBREAK_ASSERT);
     }
-
+    
     struct sockaddr_in servaddr;
     sockfd = socSocket(AF_INET, SOCK_STREAM, 0);
     memset(&servaddr, 0, sizeof(servaddr));
@@ -287,10 +325,10 @@ int main() {
     servaddr.sin_addr.s_addr = socGethostid(); 
     servaddr.sin_port = htons(8001); 
   
-    // Binding newly created socket to given IP and verification 
-     if ((socBind(sockfd, &servaddr, sizeof(servaddr))) != 0)
+        // Binding newly created socket to given IP and verification 
+    if ((socBind(sockfd, &servaddr, sizeof(servaddr))) != 0)
         CRASH;
- 
+
     Handle reply_target = 0;
     int term_request = 0;
     do {
