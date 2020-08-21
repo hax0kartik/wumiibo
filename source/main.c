@@ -85,6 +85,7 @@ typedef struct
     u8 *buf;
     MyThread thread;
     char done;
+    char connected;
 } sockThreadStruct;
 
 void sockrwThread(void *arg)
@@ -93,21 +94,20 @@ void sockrwThread(void *arg)
     Result ret = 0;
     struct pollfd fds[1];
     int nfds = 1;
-    if(connfd == -1)
-    { 
-        if ((socListen(sockfd, 1)) != 0)
-            CRASH;
 
+    if(connfd == -1)
+    {
         size_t len = sizeof(cli); 
-        while(!data->done)
+        while(1)
         {
+            if(data->done) break;
             memset(fds, 0, sizeof(fds));
             fds[0].fd = sockfd;
             fds[0].events = POLLIN;
             ret = socPoll(fds, nfds, 50);
             if(ret < 0) 
-                CRASH;
-
+                MyThread_Exit();
+            
             if(ret > 0)
             {
                 if(fds[0].revents & POLLIN)
@@ -115,11 +115,14 @@ void sockrwThread(void *arg)
                     connfd = socAccept(sockfd, &cli, &len); 
                     if(connfd < 0) 
                         CRASH;
+                    
+                    data->connected = true;
                     break;
                 }
             }
         }
     }
+
     while(1)
     {
         LightEvent_Wait(&data->lockEvent);
@@ -147,6 +150,8 @@ void handle_commands(sockThreadStruct *data)
     u32 *cmdbuf = getThreadCommandBuffer();
     u16 cmdid = cmdbuf[0] >> 16;
     //printf("Cmdid %x called\n", cmdid);
+    //This is a bare-minimum ipc-handler for necessary funcs to ensure that stuff isn't broken when 
+    //the companion isn't connected
     switch(cmdid)
     {
         case 1: //Initialize
@@ -221,6 +226,20 @@ void handle_commands(sockThreadStruct *data)
             cmdbuf[1] = 0;
             cmdbuf[2] = 0;
             cmdbuf[3] = events[1];
+            break;
+        }
+
+        case 0xD:
+        {
+            if(data->connected)
+            {
+                sockSendRecvData(data, cmdbuf);
+                break;
+            }
+
+            cmdbuf[0] = IPC_MakeHeader(cmdid, 2, 0);
+            cmdbuf[1] = 0;
+            cmdbuf[2] = tag_state;
             break;
         }
 
@@ -328,7 +347,10 @@ int main() {
         // Binding newly created socket to given IP and verification 
     if ((socBind(sockfd, &servaddr, sizeof(servaddr))) != 0)
         CRASH;
-
+    
+    if ((socListen(sockfd, 1)) != 0)
+        CRASH;
+    
     Handle reply_target = 0;
     int term_request = 0;
     do {

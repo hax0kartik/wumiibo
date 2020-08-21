@@ -84,11 +84,9 @@ Result miniSocInit(void)
     if(ret != 0) goto cleanup;
 
 
-
     ret = SOCU_Initialize(miniSocMemHandle, socContextSize);
     if(ret != 0) goto cleanup;
 
-    svcKernelSetState(0x10000, 0x10);
     miniSocEnabled = true;
 
     return 0;
@@ -131,9 +129,7 @@ Result miniSocExitDirect(void)
     svcControlMemory(&tmp, socContextAddr, socContextAddr, socContextSize, MEMOP_FREE, MEMPERM_DONTCARE);
     if(ret == 0)
     {
-
         miniSocEnabled = false;
-        svcKernelSetState(0x10000, 0x10);
     }
     return ret;
 }
