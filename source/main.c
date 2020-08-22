@@ -31,9 +31,6 @@ void __appInit() {
     
     if(cfguInit() > 0)		
         CRASH;
-
-    if(fsInit() > 0)
-        CRASH;
     //consoleDebugInit(debugDevice_SVC);
     //gdbHioDevInit();
     //gdbHioDevRedirectStdStreams(false, true, false);
@@ -44,7 +41,6 @@ void __appInit() {
 // this is called after main exits
 void __appExit() {
     miniSocExit();
-    fsExit();
     cfguExit();
     srvSysExit();
 }
@@ -150,7 +146,7 @@ void handle_commands(sockThreadStruct *data)
     u32 *cmdbuf = getThreadCommandBuffer();
     u16 cmdid = cmdbuf[0] >> 16;
     //printf("Cmdid %x called\n", cmdid);
-    //This is a bare-minimum ipc-handler for necessary funcs to ensure that stuff isn't broken when 
+    //This is a bare-minimum ipc-handler for some critical funcs to ensure that stuff isn't broken when 
     //the companion isn't connected
     switch(cmdid)
     {
@@ -344,7 +340,7 @@ int main() {
     servaddr.sin_addr.s_addr = socGethostid(); 
     servaddr.sin_port = htons(8001); 
   
-        // Binding newly created socket to given IP and verification 
+    // Binding newly created socket to given IP and verification 
     if ((socBind(sockfd, &servaddr, sizeof(servaddr))) != 0)
         CRASH;
     

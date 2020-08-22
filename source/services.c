@@ -93,12 +93,3 @@ Result srvSysExit(void)
   RecursiveLock_Unlock(&initLock);
   return rc;
 }
-
-void fsSysInit(void)
-{
-	Handle *fsHandlePtr = fsGetSessionHandle();
-	srvGetServiceHandle(fsHandlePtr, "fs:USER");
-
-	FSUSER_InitializeWithSdkVersion(*fsHandlePtr, SDK_VERSION);
-	FSUSER_SetPriority(0);
-}
