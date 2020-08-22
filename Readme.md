@@ -16,6 +16,12 @@ Amiibo Emulation for 3ds over network.
 
  * If everything went successfully, your amiibo should be emulated now.
 
+
+## Reporting bugs
+
+All cmds are currently not implemented, so expect bugs.
+Please use github issues to report any such games which don't work.
+
 ## How to Compile
 Get devkitpro, ctrulib and makerom and then `make -j` to compile.
 
@@ -27,8 +33,8 @@ This is a rewrite of the 3ds's nfc module to enable amiibo emulation. The main I
 
 @HiddenRambings for `noamii`, which served as a base for me to extend and develop upon.
 
-@3dbrew folks for the nicely documented nfc and amiibo pages
+@3dbrew folks for the nicely documented nfc and amiibo pages.
 
 @Socram8888 for amiitool, reversing nfc, etc.
 
-And surely many more people out there, whom I have forgotten to mention
+And surely many more people out there, whom I have forgotten to mention.

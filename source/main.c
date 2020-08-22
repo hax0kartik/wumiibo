@@ -7,6 +7,7 @@
 #include "services.h"
 #include "minisoc.h"
 #include "mythread.h"
+#include "input.h"
 
 #define MAX_SESSIONS 1
 #define SERVICE_ENDPOINTS 3
@@ -76,8 +77,6 @@ static struct sockaddr_in cli;
 
 typedef struct 
 {
-    LightEvent lockEvent;
-    LightEvent ReadCompleteEvent;
     u8 *buf;
     MyThread thread;
     char done;
@@ -121,31 +120,30 @@ void sockrwThread(void *arg)
 
     while(1)
     {
-        LightEvent_Wait(&data->lockEvent);
-        if(data->done) break;
-        socSend(connfd, data->buf, 256, 0);
-        socRecv(connfd, &data->buf[0], 256, 0);
-        LightEvent_Signal(&data->ReadCompleteEvent);
+        u32 key = waitInput();
+        if(key & BUTTON_START) 
+        {
+            if(events[1] != -1)
+                svcSignalEvent(events[1]);
+        }
     }
     MyThread_Exit();
 }
 
 void sockSendRecvData(sockThreadStruct *data, u32 *cmdbuf)
 {
+    if(!data->connected) return;
     memcpy(&data->buf[0], (u8*)&cmdbuf[0], 256);
-    LightEvent_Signal(&data->lockEvent);
-    //printf("Waiting for read to complete\n");
-    LightEvent_Wait(&data->ReadCompleteEvent);
-    //printf("cmdheader %08X\n", (u32*)data->buf[0]);
-    memcpy((u8*)&cmdbuf[0], &data->buf[0], 256);
-            
+    socSend(connfd, data->buf, 256, 0);
+    socRecv(connfd, &data->buf[0], 256, 0);
+    memcpy((u8*)&cmdbuf[0], &data->buf[0], 256);           
 }
 
 void handle_commands(sockThreadStruct *data)
 {
     u32 *cmdbuf = getThreadCommandBuffer();
     u16 cmdid = cmdbuf[0] >> 16;
-    //printf("Cmdid %x called\n", cmdid);
+   // printf("Cmdid %x called\n", cmdid);
     //This is a bare-minimum ipc-handler for some critical funcs to ensure that stuff isn't broken when 
     //the companion isn't connected
     switch(cmdid)
@@ -164,7 +162,6 @@ void handle_commands(sockThreadStruct *data)
         {
             data->done = 1;
             socClose(sockfd);
-            LightEvent_Signal(&data->lockEvent); // Signal LightEvent since the thread is waiting for it
             MyThread_Join(&data->thread, 2e+9);
             tag_state = NFC_TagState_Uninitialized;
             cmdbuf[0] = IPC_MakeHeader(cmdid, 1, 0);
@@ -191,6 +188,7 @@ void handle_commands(sockThreadStruct *data)
 
         case 5:
         {
+            tag_state = NFC_TagState_Scanning;
             if(events[0] != -1)
                 svcSignalEvent(events[0]);
             sockSendRecvData(data, cmdbuf);
@@ -319,9 +317,7 @@ int main() {
 
     u8 buf[256];
     thread_data.buf = buf;
-    LightEvent_Init(&thread_data.lockEvent, RESET_ONESHOT);
-    LightEvent_Init(&thread_data.ReadCompleteEvent, RESET_ONESHOT);
-
+    
     Result ret = 0;
     if (R_FAILED(srvRegisterService(hndNfuU, "nfc:u", MAX_SESSIONS))) {
         svcBreak(USERBREAK_ASSERT);
