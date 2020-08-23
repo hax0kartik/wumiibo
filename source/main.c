@@ -125,6 +125,7 @@ void sockrwThread(void *arg)
         {
             if(events[1] != -1)
                 svcSignalEvent(events[1]);
+            tag_state = NFC_TagState_OutOfRange;
         }
     }
     MyThread_Exit();
@@ -225,6 +226,11 @@ void handle_commands(sockThreadStruct *data)
         {
             if(data->connected)
             {
+                if(tag_state == NFC_TagState_OutOfRange)
+                {
+                    cmdbuf[1] = 1;
+                    cmdbuf[2] = NFC_TagState_OutOfRange;
+                }
                 sockSendRecvData(data, cmdbuf);
                 break;
             }
