@@ -110,7 +110,7 @@ void sockrwThread(void *arg)
                     connfd = socAccept(sockfd, &cli, &len); 
                     if(connfd < 0) 
                         CRASH;
-                    
+                    if(events[0] != -1) svcSignalEvent(events[0]);
                     data->connected = true;
                     break;
                 }
@@ -189,8 +189,6 @@ void handle_commands(sockThreadStruct *data)
         case 5:
         {
             tag_state = NFC_TagState_Scanning;
-            if(events[0] != -1)
-                svcSignalEvent(events[0]);
             sockSendRecvData(data, cmdbuf);
             break;
         }
@@ -234,6 +232,14 @@ void handle_commands(sockThreadStruct *data)
             cmdbuf[0] = IPC_MakeHeader(cmdid, 2, 0);
             cmdbuf[1] = 0;
             cmdbuf[2] = tag_state;
+            break;
+        }
+
+        case 0xF:
+        {
+            cmdbuf[0] = IPC_MakeHeader(cmdid, 2, 0);
+            cmdbuf[1] = 0;
+            cmdbuf[2] = 2;
             break;
         }
 
@@ -317,7 +323,7 @@ int main() {
 
     u8 buf[256];
     thread_data.buf = buf;
-    
+
     Result ret = 0;
     if (R_FAILED(srvRegisterService(hndNfuU, "nfc:u", MAX_SESSIONS))) {
         svcBreak(USERBREAK_ASSERT);
