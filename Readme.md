@@ -16,6 +16,8 @@ Amiibo Emulation for 3ds over network.
 
  * If everything went successfully, your amiibo should be emulated now.
 
+ __NOTE: Some Games can get stuck on "Remove the amiibo to continue" screen. Press the `START` button and wait for 5-6 secs. If it doesn't work, open a github issue__
+
 
 ## Reporting bugs
 
