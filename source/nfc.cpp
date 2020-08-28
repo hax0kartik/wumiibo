@@ -2,7 +2,6 @@
 #include <stdio.h>
 static u8 ALIGN(8) hidThreadStack[0x1000];
 
-
 void hidThread(void *arg)
 {
     NFC *nfc = (NFC*)arg;
@@ -20,6 +19,13 @@ void hidThread(void *arg)
                 nfc->GetDirectory()->ListEntries();
                 nfc->GetDirectory()->ConstructFileLocation();
             }
+            else
+            {
+                nfc->GetDirectory()->Reset();
+                nfc->SetTagState(TagStates::OutOfRange);
+                svcSignalEvent(*nfc->GetOutOfRangeEvent());
+            }
+            
         }
     }
 }
@@ -82,7 +88,11 @@ void NFC::CreateHidThread()
 {
     if(!m_hidthreadcreated)
     {
-       // m_selected = 1;
-       MyThread_Create(&m_hidthread, hidThread, this, hidThreadStack, 0x1000, 53, -2);
+        LightEvent_Init(&m_doevents, RESET_ONESHOT);
+        svcCreateEvent(&m_taginrange, RESET_ONESHOT);
+        svcCreateEvent(&m_tagoutofrange, RESET_ONESHOT);
+        // m_selected = 1;
+        MyThread_Create(&m_hidthread, hidThread, this, hidThreadStack, 0x1000, 53, -2);
+        m_hidthreadcreated = 1;
     }
 }

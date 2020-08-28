@@ -12,6 +12,10 @@ class DirectoryLister
         char *GetSelectedFileLocation(){
             return m_filename;
         }
+        void Reset() {
+            m_selected = -1;
+            m_readentries = -1;
+        }
     private:
         Handle m_fshandle;
         FS_Archive m_archive;
