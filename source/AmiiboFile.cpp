@@ -54,6 +54,7 @@ int AmiiboFile::ParseDecryptedFile()
          memcpy((uint8_t*)&m_plaindata.AppData[0], (uint8_t*)&m_decrypteddata[0xDC], 0xD8);
       }
    }
+   m_parsed = 1;
    return 0;
 }
 

@@ -10,12 +10,13 @@ void hidThread(void *arg)
     {
         svcSleepThread(0.1e+9);
         hidScanInput();
-        if(hidKeysDown() & KEY_START)
+        if(hidKeysDown() & KEY_L && hidKeysDown() & KEY_Y)
         {
             //printf("KEY_START pressed\n");
             nfc->DrawMenu(nfc);
             if(nfc->m_selected == 0)
             {
+                nfc->GetAmiibo()->Reset();
                 nfc->GetDirectory()->PopulateEntries("/wumiibo");
                 nfc->GetDirectory()->ListEntries();
                 nfc->GetDirectory()->ConstructFileLocation();
@@ -25,6 +26,7 @@ void hidThread(void *arg)
             }
             else if(nfc->m_selected == 1)
             {
+                nfc->GetAmiibo()->Reset();
                 nfc->GetDirectory()->Reset();
                 nfc->SetTagState(TagStates::OutOfRange);
                 svcSignalEvent(*nfc->GetOutOfRangeEvent());
@@ -42,7 +44,7 @@ void EventThread(void *arg)
     while(1)
     {
         svcSleepThread(0.1e+9);
-        if(!(nfc->GetDirectory()->HasSelected()))
+        if(!(nfc->GetAmiibo()->HasParsed()))
             continue;
         svcSignalEvent(*taginrange);
         u64 time = osGetTime();

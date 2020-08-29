@@ -18,10 +18,16 @@ class AmiiboFile
         Amiibo_IdentificationBlock *GetIdentity() {
             return &m_identityblock;
         }
-
+        bool HasParsed() {
+            return m_parsed > 0;
+        }
+        void Reset(){
+            m_parsed = 0; // Is Enough
+        }
     private:
         uint8_t m_decrypteddata[540];
         Amiibo_PlainData m_plaindata;
         Amiibo_IdentificationBlock m_identityblock;
         Amiibo_TagInfo m_taginfo;
+        uint8_t m_parsed = 0;
 };

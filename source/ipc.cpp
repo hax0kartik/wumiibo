@@ -200,7 +200,7 @@ void IPC::HandleCommands(NFC* nfc)
             cmdbuf[0] = IPC_MakeHeader(cmdid, 2, 0);
             cmdbuf[1] = 0;
             cmdbuf[2] = nfc->GetTagState();
-            if(nfc->GetTagState() == TagStates::Scanning && nfc->GetDirectory()->HasSelected())
+            if(nfc->GetTagState() == TagStates::Scanning && nfc->GetAmiibo()->HasParsed())
                 nfc->SetTagState(TagStates::InRange);
             break;
         }
