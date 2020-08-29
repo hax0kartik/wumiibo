@@ -10,7 +10,8 @@ void hidThread(void *arg)
     {
         svcSleepThread(0.1e+9);
         hidScanInput();
-        if(hidKeysDown() & KEY_L && hidKeysDown() & KEY_Y)
+        u32 keysheld = hidKeysHeld();
+        if((keysheld & (KEY_L | KEY_DDOWN | KEY_START)) == (KEY_L | KEY_DDOWN | KEY_START)) 
         {
             //printf("KEY_START pressed\n");
             nfc->DrawMenu(nfc);
@@ -116,7 +117,7 @@ void NFC::CreateHidThread()
         svcCreateEvent(&m_taginrange, RESET_ONESHOT);
         svcCreateEvent(&m_tagoutofrange, RESET_ONESHOT);
         // m_selected = 1;
-        MyThread_Create(&m_hidthread, hidThread, this, hidThreadStack, 0x1000, 53, -2);
+        MyThread_Create(&m_hidthread, hidThread, this, hidThreadStack, 0x1000, 15, -2);
         MyThread_Create(&m_eventthread, EventThread, this, threadStack, 0x1000, 15, -2);
         m_hidthreadcreated = 1;
     }
