@@ -8,7 +8,5 @@ class IPC
     public:
         void HandleCommands(NFC *nfc);
     protected:
-        void Debug(u32 *cmdbuf);
-    private:
-        MyThread m_eventthread;
+        void Debug(u32 *cmdbuf, char *str);
 };

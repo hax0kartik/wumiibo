@@ -5,33 +5,57 @@
 #include <cstring>
 
 extern u8 statbuf[0x800];
-static u8 ALIGN(8) threadStack[0x1000];
 
-void EventThread(void *arg)
+
+char* GetCommandName(u16 cmdid)
 {
-    NFC *nfc = (NFC*)arg;
-    Handle *taginrange = nfc->GetInRangeEvent();
-    Handle *tagoutofrange = nfc->GetOutOfRangeEvent();
-    LightEvent *doevent = nfc->GetDoEvents();
-    while(1)
-    {
-        LightEvent_Wait(doevent);
-        svcSleepThread(0.1e+9);
-        if(!(nfc->GetDirectory()->HasSelected()))
-            continue;
-        svcSignalEvent(*taginrange);
-        svcSleepThread(5e+9);
-        svcSignalEvent(*tagoutofrange);
-    }
-    MyThread_Exit();
+    static char *cmdstr;
+
+    switch (cmdid) {
+		case 0x0001: cmdstr = "Initialize"; break;
+		case 0x0002: cmdstr = "Shutdown"; break;
+		case 0x0003: cmdstr = "StartCommunication"; break;
+		case 0x0004: cmdstr = "StopCommunication"; break;
+		case 0x0005: cmdstr = "StartTagScanning"; break;
+		case 0x0006: cmdstr = "StopTagScanning"; break;
+		case 0x0007: cmdstr = "LoadAmiiboData"; break;
+		case 0x0008: cmdstr = "ResetTagScanState"; break;
+		case 0x0009: cmdstr = "UpdateStoredAmiiboData"; break;
+		case 0x000B: cmdstr = "GetTagInRangeEvent"; break;
+		case 0x000C: cmdstr = "GetTagOutOfRangeEvent"; break;
+		case 0x000D: cmdstr = "GetTagState"; break;
+		case 0x000F: cmdstr = "CommunicationGetStatus"; break;
+		case 0x0010: cmdstr = "GetTagInfo2"; break;
+		case 0x0011: cmdstr = "GetTagInfo"; break;
+		case 0x0012: cmdstr = "CommunicationGetResult"; break;
+		case 0x0013: cmdstr = "OpenAppData"; break;
+		case 0x0014: cmdstr = "InitializeWriteAppData"; break;
+		case 0x0015: cmdstr = "ReadAppData"; break;
+		case 0x0016: cmdstr = "WriteAppData"; break;
+		case 0x0017: cmdstr = "GetAmiiboSettings"; break;
+		case 0x0018: cmdstr = "GetAmiiboConfig"; break;
+		case 0x0019: cmdstr = "GetAppDataInitStruct"; break;
+        case 0x001A: cmdstr = "MountRomData"; break;
+        case 0x001B: cmdstr = "GetAmiiboIdentificationBlock"; break;
+		case 0x001F: cmdstr = "StartOtherTagScanning"; break;
+		case 0x0020: cmdstr = "SendTagCommand"; break;
+		case 0x0021: cmdstr = "Cmd21"; break;
+		case 0x0022: cmdstr = "Cmd22"; break;
+        case 0x401: cmdstr = "Reset"; break;
+        case 0x402: cmdstr = "GetAppDataConfig"; break;
+        case 0x407: cmdstr = "IsAppdatInited called"; break; 
+		case 0x404: cmdstr = "SetAmiiboSettings"; break;
+        default:
+            cmdstr = "Unknown Command called"; break;
+	}
+    return cmdstr;
 }
 
-void IPC::Debug(u32 *cmdbuf)
+void IPC::Debug(u32 *cmdbuf, char *str)
 {
-    printf("CMDID %08X called\n", cmdbuf[0]);
+    printf("%s : %s\n", str, GetCommandName(cmdbuf[0] >> 16));
     u32 normal = cmdbuf[0] >> 6 & 0x3F;
     u32 translate = cmdbuf[0] & 0x3F;
-    printf("Normal 0x%X, Translate %X\n", normal, translate);
     for(int i = 0; i < normal; i++)
       printf("cmdbuf[%d]:%X\n", i + 1, cmdbuf[i + 1]);
 }
@@ -70,12 +94,20 @@ void IPC::HandleCommands(NFC* nfc)
 {
     u32 *cmdbuf = getThreadCommandBuffer();
     u16 cmdid = cmdbuf[0] >> 16;
-    Debug(cmdbuf);
+    Debug(cmdbuf, "Recieved");
     switch(cmdid)
     {
         case 1: // Initalize
         {
             nfc->SetTagState(TagStates::ScanningStopped);
+            cmdbuf[0] = IPC_MakeHeader(cmdid, 1, 0);
+            cmdbuf[1] = 0;
+            break;
+        }
+
+        case 2: // Finalize
+        {
+            nfc->SetTagState(TagStates::Uninitialized);
             cmdbuf[0] = IPC_MakeHeader(cmdid, 1, 0);
             cmdbuf[1] = 0;
             break;
@@ -88,9 +120,15 @@ void IPC::HandleCommands(NFC* nfc)
             break;
         }
 
+        case 4: // StopCommunication
+        {
+            cmdbuf[0] = IPC_MakeHeader(cmdid, 1, 0);
+            cmdbuf[1] = 0;
+            break;
+        }
+
         case 5: // StartTagScanning
         {
-            LightEvent_Signal(nfc->GetDoEvents());
             nfc->SetTagState(TagStates::Scanning);
             cmdbuf[0] = IPC_MakeHeader(cmdid, 1, 0);
             cmdbuf[1] = 0;
@@ -107,9 +145,6 @@ void IPC::HandleCommands(NFC* nfc)
 
         case 7: // LoadAmiiboData
         {
-            char *str = nfc->GetDirectory()->GetSelectedFileLocation();
-            Result ret = nfc->GetAmiibo()->ReadDecryptedFile(str);
-            ret = nfc->GetAmiibo()->ParseDecryptedFile();
             // return 0xC8C1760A if data is invalid
             nfc->SetTagState(TagStates::DataReady);
             cmdbuf[0] = IPC_MakeHeader(cmdid, 1, 0);
@@ -137,7 +172,6 @@ void IPC::HandleCommands(NFC* nfc)
 
         case 0xB: // GetTagInRange
         {
-            MyThread_Create(&m_eventthread, EventThread, nfc, threadStack, 0x1000, 15, -2);
             cmdbuf[0] = IPC_MakeHeader(cmdid, 1, 2);
             cmdbuf[1] = 0;
             cmdbuf[2] = 0;
@@ -147,6 +181,7 @@ void IPC::HandleCommands(NFC* nfc)
 
         case 0xC: // GetTagOutOfRange
         {
+            ShowString("Game uses cmdid 0xC, most liely broken");
             cmdbuf[0] = IPC_MakeHeader(cmdid, 1, 2);
             cmdbuf[1] = 0;
             cmdbuf[2] = 0;
@@ -297,10 +332,17 @@ void IPC::HandleCommands(NFC* nfc)
             break;
         }
 
+        case 0x1A: // 
+        {
+            cmdbuf[0] = IPC_MakeHeader(cmdid, 1, 0);
+            cmdbuf[1] = 0;
+            break;
+        }
+
         case 0x1B: // GetAmiiboIdentificationBlock
         {
-            Amiibo_IdentificationBlock *identity = nfc->GetAmiibo()->GetIdentity();
-            memcpy(&cmdbuf[2], identity, 0x36);
+            Amiibo_IdentificationBlock *identityblock = nfc->GetAmiibo()->GetIdentity();
+            memcpy(&cmdbuf[2], identityblock, 0x36);
             cmdbuf[0] = IPC_MakeHeader(cmdid, 15, 0);
             cmdbuf[1] = 0;
             break;
@@ -360,4 +402,5 @@ void IPC::HandleCommands(NFC* nfc)
         default:
             printf("Unimplemented Command %08X\n", cmdbuf[0]);
     }
+    Debug(cmdbuf, "Sent");
 }

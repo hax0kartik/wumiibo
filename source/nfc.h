@@ -14,6 +14,7 @@ class NFC
     public:
         void CreateHidThread();
         static void DrawMenu(NFC *nfc);
+        void ShowWarning();
         DirectoryLister *GetDirectory(){
             return &m_directory;
         }
@@ -39,6 +40,7 @@ class NFC
 
     private:
         MyThread m_hidthread;
+        MyThread m_eventthread;
         uint8_t m_hidthreadcreated = 0;
         DirectoryLister m_directory;
         AmiiboFile m_amiibo;

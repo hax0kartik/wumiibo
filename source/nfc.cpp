@@ -1,6 +1,7 @@
 #include "nfc.h"
 #include <stdio.h>
 static u8 ALIGN(8) hidThreadStack[0x1000];
+static u8 ALIGN(8) threadStack[0x1000];
 
 void hidThread(void *arg)
 {
@@ -18,8 +19,11 @@ void hidThread(void *arg)
                 nfc->GetDirectory()->PopulateEntries("/wumiibo");
                 nfc->GetDirectory()->ListEntries();
                 nfc->GetDirectory()->ConstructFileLocation();
+                char *str = nfc->GetDirectory()->GetSelectedFileLocation();
+                Result ret = nfc->GetAmiibo()->ReadDecryptedFile(str);
+                ret = nfc->GetAmiibo()->ParseDecryptedFile();
             }
-            else
+            else if(nfc->m_selected == 1)
             {
                 nfc->GetDirectory()->Reset();
                 nfc->SetTagState(TagStates::OutOfRange);
@@ -28,6 +32,22 @@ void hidThread(void *arg)
             
         }
     }
+}
+
+void EventThread(void *arg)
+{
+    NFC *nfc = (NFC*)arg;
+    Handle *taginrange = nfc->GetInRangeEvent();
+    Handle *tagoutofrange = nfc->GetOutOfRangeEvent();
+    LightEvent *doevent = nfc->GetDoEvents();
+    while(1)
+    {
+        svcSleepThread(0.1e+9);
+        if(!(nfc->GetDirectory()->HasSelected()))
+            continue;
+        svcSignalEvent(*taginrange);
+    }
+    MyThread_Exit();
 }
 
 void NFC::DrawMenu(NFC *nfc)
@@ -44,6 +64,7 @@ void NFC::DrawMenu(NFC *nfc)
     Draw_DrawString(15, 20, COLOR_WHITE, "Select a figure.");
     Draw_DrawString(15, 30, COLOR_WHITE, "Force Stop Emulation.");
 
+    nfc->m_selected = 0;
     while(true)
     {
         for(int i = 0; i < size; i++)
@@ -88,11 +109,12 @@ void NFC::CreateHidThread()
 {
     if(!m_hidthreadcreated)
     {
-        LightEvent_Init(&m_doevents, RESET_ONESHOT);
+        LightEvent_Init(&m_doevents, RESET_STICKY);
         svcCreateEvent(&m_taginrange, RESET_ONESHOT);
         svcCreateEvent(&m_tagoutofrange, RESET_ONESHOT);
         // m_selected = 1;
         MyThread_Create(&m_hidthread, hidThread, this, hidThreadStack, 0x1000, 53, -2);
+        MyThread_Create(&m_eventthread, EventThread, this, threadStack, 0x1000, 15, -2);
         m_hidthreadcreated = 1;
     }
 }
