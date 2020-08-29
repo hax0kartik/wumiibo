@@ -95,6 +95,12 @@ void IPC::HandleCommands(NFC* nfc)
     u32 *cmdbuf = getThreadCommandBuffer();
     u16 cmdid = cmdbuf[0] >> 16;
     Debug(cmdbuf, "Recieved");
+
+    if(cmdid != 0xF && cmdid != 0xD && m_hasCalled0xC)
+    {
+        printf("Updating Last called Command Time\n");
+        nfc->UpdateLastCommandTime(osGetTime()); 
+    }
     switch(cmdid)
     {
         case 1: // Initalize
@@ -180,8 +186,8 @@ void IPC::HandleCommands(NFC* nfc)
         }
 
         case 0xC: // GetTagOutOfRange
-        {
-            ShowString("Game uses cmdid 0xC, most liely broken");
+        {   
+            m_hasCalled0xC = 1; 
             cmdbuf[0] = IPC_MakeHeader(cmdid, 1, 2);
             cmdbuf[1] = 0;
             cmdbuf[2] = 0;

@@ -33,8 +33,11 @@ class NFC
         Handle *GetOutOfRangeEvent(){
             return &m_tagoutofrange;
         }
-        LightEvent *GetDoEvents(){
-            return &m_doevents;
+        void UpdateLastCommandTime(u64 time){
+            m_lastcommandtime = time;
+        }
+        u64 GetLastCommandTime(){
+            return m_lastcommandtime;
         }
         int m_selected = 0;
 
@@ -47,5 +50,5 @@ class NFC
         TagState m_state;
         Handle m_taginrange;
         Handle m_tagoutofrange;
-        LightEvent m_doevents;
+        u64 m_lastcommandtime;
 };

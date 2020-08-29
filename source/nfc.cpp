@@ -39,13 +39,15 @@ void EventThread(void *arg)
     NFC *nfc = (NFC*)arg;
     Handle *taginrange = nfc->GetInRangeEvent();
     Handle *tagoutofrange = nfc->GetOutOfRangeEvent();
-    LightEvent *doevent = nfc->GetDoEvents();
     while(1)
     {
         svcSleepThread(0.1e+9);
         if(!(nfc->GetDirectory()->HasSelected()))
             continue;
         svcSignalEvent(*taginrange);
+        u64 time = osGetTime();
+        if((time - nfc->GetLastCommandTime()) > 3000)
+            svcSignalEvent(*tagoutofrange);
     }
     MyThread_Exit();
 }
@@ -109,7 +111,6 @@ void NFC::CreateHidThread()
 {
     if(!m_hidthreadcreated)
     {
-        LightEvent_Init(&m_doevents, RESET_STICKY);
         svcCreateEvent(&m_taginrange, RESET_ONESHOT);
         svcCreateEvent(&m_tagoutofrange, RESET_ONESHOT);
         // m_selected = 1;
