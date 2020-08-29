@@ -268,7 +268,9 @@ void IPC::HandleCommands(NFC* nfc)
             plaindata->appDataConfig.appid = bswap_32(appid);
             plaindata->flag |= 0x20u;
             memcpy(&plaindata->AppData[0], (void*)bufptr, size);
-
+            char *str = nfc->GetDirectory()->GetSelectedFileLocation();
+            nfc->GetAmiibo()->SaveDecryptedFile();
+            Result ret = nfc->GetAmiibo()->WriteDecryptedFile(str);
             cmdbuf[0] = IPC_MakeHeader(cmdid, 1, 0);
             cmdbuf[1] = 0;
             break;
@@ -292,6 +294,9 @@ void IPC::HandleCommands(NFC* nfc)
             memcpy(&plaindata->AppData[0], (void*)cmdbuf[11], 0xD8);
             cmdbuf[0] = IPC_MakeHeader(cmdid, 1, 0);
             cmdbuf[1] = 0;
+            char *str = nfc->GetDirectory()->GetSelectedFileLocation();
+            nfc->GetAmiibo()->SaveDecryptedFile();
+            Result ret = nfc->GetAmiibo()->WriteDecryptedFile(str);
             break;
         }
 
@@ -335,6 +340,14 @@ void IPC::HandleCommands(NFC* nfc)
             memcpy(&cmdbuf[2], &config, 0x10);
             cmdbuf[0] = IPC_MakeHeader(cmdid, 17, 0);
             cmdbuf[1] = 0;
+            break;
+        }
+
+        case 0x19: //GetAppDataInitStruct 
+        {
+            cmdbuf[0] = IPC_MakeHeader(cmdid, 16, 0);
+            cmdbuf[1] = 0;
+            memset(&cmdbuf[2], 0, 0x3C);
             break;
         }
 

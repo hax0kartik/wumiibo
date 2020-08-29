@@ -3,6 +3,14 @@
 static u8 ALIGN(8) hidThreadStack[0x1000];
 static u8 ALIGN(8) threadStack[0x1000];
 
+extern "C"
+{
+    bool hidShouldUseIrrst(void)
+    {
+        return false;
+    }
+}
+
 void hidThread(void *arg)
 {
     NFC *nfc = (NFC*)arg;
