@@ -5,6 +5,7 @@ extern "C"
 {
     #include "services.h"
     #include "mythread.h"
+    #include "logger.h"
 }
 #define MAX_SESSIONS 1
 #define SERVICE_ENDPOINTS 3
@@ -50,10 +51,12 @@ extern "C"
         gdbHioDevInit();
         gdbHioDevRedirectStdStreams(false, true, false);
         fsSysInit();
+        logInit();
     }
 
     // this is called after main exits
     void __appExit() {
+        logExit();
         fsExit();
         cfguExit();
         srvSysExit();

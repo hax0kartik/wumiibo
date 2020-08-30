@@ -14,6 +14,7 @@ class NFC
     public:
         void CreateHidThread();
         static void DrawMenu(NFC *nfc);
+        static void DisplayError(const char *str);
         void ShowWarning();
         DirectoryLister *GetDirectory(){
             return &m_directory;

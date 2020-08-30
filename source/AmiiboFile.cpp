@@ -29,8 +29,11 @@ Result AmiiboFile::WriteDecryptedFile(const char *name)
 
 int AmiiboFile::ParseDecryptedFile()
 {
-   if(m_decrypteddata[0x02] != 0xF && m_decrypteddata[0x3] != 0xE0)
+   if(m_decrypteddata[0x0C] == 0xF1 && m_decrypteddata[0x0D] == 0x10)
       return -1;
+
+   if(m_decrypteddata[0x02] != 0xF && m_decrypteddata[0x3] != 0xE0)
+      return -2;
    
    memcpy((u8*)&m_identityblock, (u8*)&m_decrypteddata[0x1DC], 8);
    m_plaindata.pagex4_byte3 = m_decrypteddata[0x2B];
