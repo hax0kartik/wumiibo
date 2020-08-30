@@ -71,16 +71,16 @@ void EventThread(void *arg)
 void NFC::DisplayError(const char *str)
 {
     svcKernelSetState(0x10000, 2|1);
-	Draw_SetupFramebuffer();
-	Draw_Lock();
-	Draw_ClearFramebuffer();
-	Draw_FlushFramebuffer();
+    Draw_SetupFramebuffer();
+    Draw_Lock();
+    Draw_ClearFramebuffer();
+    Draw_FlushFramebuffer();
     Draw_DrawString(120, 10, COLOR_TITLE, "Wumiibo Menu");
     Draw_DrawString(15, 20, COLOR_WHITE, str);
     u32 key = waitInput();
     Draw_RestoreFramebuffer();
-	Draw_Unlock();
-	svcKernelSetState(0x10000, 2 | 1);
+    Draw_Unlock();
+    svcKernelSetState(0x10000, 2 | 1);
 }
 
 void NFC::DrawMenu(NFC *nfc)
@@ -88,10 +88,10 @@ void NFC::DrawMenu(NFC *nfc)
     int size = 2;
     svcKernelSetState(0x10000, 2|1);
 
-	Draw_SetupFramebuffer();
-	Draw_Lock();
-	Draw_ClearFramebuffer();
-	Draw_FlushFramebuffer();
+    Draw_SetupFramebuffer();
+    Draw_Lock();
+    Draw_ClearFramebuffer();
+    Draw_FlushFramebuffer();
 
     Draw_DrawString(120, 10, COLOR_TITLE, "Wumiibo Menu");
     Draw_DrawString(15, 20, COLOR_WHITE, "Select a figure.");
@@ -138,9 +138,9 @@ void NFC::DrawMenu(NFC *nfc)
         }
 
     }
-	Draw_RestoreFramebuffer();
-	Draw_Unlock();
-	svcKernelSetState(0x10000, 2 | 1);
+    Draw_RestoreFramebuffer();
+    Draw_Unlock();
+    svcKernelSetState(0x10000, 2 | 1);
 }
 
 void NFC::CreateHidThread()
