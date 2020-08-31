@@ -1,34 +1,30 @@
 # Wumiibo
-Amiibo Emulation for 3ds over network.
+Amiibo Emulation for 3ds.
 
 ## How To Use
  * Put the `0004013000004002` folder in `luma/titles/`
  
+ * Download the amiibo you want to emulate from [here](https://hax0kartik.github.io/amiibo-generator). All this website does is produce a bin file with amiiboID in it, so the produced file can be shared freely!
+
+ * Put the downloaded bins in `sd:/wumiibo` (Max 50)
+
  * Enable Title patching from luma menu
- 
- * Obtain the [client/companion](https://github.com/hax0kartik/wumiibo-client/) app
  
  * Open your game and reach to the screen where it tells you to place your amiibo.
  
- * Open the companion app, select your encrypted and decrypted amiibo files, Enter your 3ds's IP and click on `Emulate`.
+ * Press L + DOWN + START to bring up Wumiibo Menu and select the amiibo you wish to emulate.
  
- __NOTE: Your 3ds and your device should be connected to the same network__
-
  * If everything went successfully, your amiibo should be emulated now.
-
- __NOTE: Some Games can get stuck on "Remove the amiibo to continue" screen. Press the `START` button and wait for 5-6 secs. If it doesn't work, open a github issue__
-
 
 ## Reporting bugs
 
-All cmds are currently not implemented, so expect bugs.
-Please use github issues to report any such games which don't work.
+Please use github issues to report any games which don't work.
 
 ## How to Compile
 Get devkitpro, ctrulib and makerom and then `make -j` to compile.
 
 ## Technical Details
-This is a rewrite of the 3ds's nfc module to enable amiibo emulation. The main IPC handler is located in the client/companion itself. All it does is relay the cmdbuf to the companion and then pass the information to the games. It does have a "dummy" IPC handler which handles some critical funcs. No parsing of data is done here, the client is responsible for that.
+This is a rewrite of the 3ds's nfc module to enable amiibo emulation.
 
 ## Credits
 @Luigoalma for advising me and for listening to my rants.
@@ -38,5 +34,9 @@ This is a rewrite of the 3ds's nfc module to enable amiibo emulation. The main I
 @3dbrew folks for the nicely documented nfc and amiibo pages.
 
 @Socram8888 for amiitool, reversing nfc, etc.
+
+@Luma3ds devs lots of code has been copied from rosalina
+
+thomas, Marcus777, k9999, Mr.Faq, MissingNerd and many others who helped testing wumiibo
 
 And surely many more people out there, whom I have forgotten to mention.
