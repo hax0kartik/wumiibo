@@ -15,6 +15,7 @@ class NFC
         void CreateHidThread();
         static void DrawMenu(NFC *nfc);
         static void DisplayError(const char *str);
+        static u32 PromptForNewCombo(u32 combo);
         void ShowWarning();
         DirectoryLister *GetDirectory(){
             return &m_directory;
@@ -40,6 +41,12 @@ class NFC
         u64 GetLastCommandTime(){
             return m_lastcommandtime;
         }
+        u32 GetMenuCombo(){
+            return m_menucombo;
+        }
+        void SetMenuCombo(u32 combo){
+            m_menucombo = combo;
+        }
         int m_selected = 0;
 
     private:
@@ -52,4 +59,5 @@ class NFC
         Handle m_taginrange;
         Handle m_tagoutofrange;
         u64 m_lastcommandtime;
+        u32 m_menucombo = KEY_START | KEY_L | KEY_DDOWN;
 };

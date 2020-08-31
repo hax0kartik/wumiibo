@@ -1,9 +1,6 @@
 #include "nfc.h"
-#include <stdio.h>
+#include <cstring>
 #include <cstdlib>
-extern "C"{
-    #include "logger.h"
-}
 static u8 ALIGN(8) hidThreadStack[0x1000];
 static u8 ALIGN(8) threadStack[0x1000];
 
@@ -23,7 +20,8 @@ void hidThread(void *arg)
         svcSleepThread(0.1e+9);
         hidScanInput();
         u32 keysheld = hidKeysHeld();
-        if((keysheld & (KEY_L | KEY_DDOWN | KEY_START)) == (KEY_L | KEY_DDOWN | KEY_START)) 
+        u32 combo = nfc->GetMenuCombo();
+        if((keysheld & combo) == combo) 
         {
             //printf("KEY_START pressed\n");
             nfc->DrawMenu(nfc);
