@@ -1,6 +1,9 @@
 #include "nfc.h"
 #include <stdio.h>
 #include <cstdlib>
+extern "C"{
+    #include "logger.h"
+}
 static u8 ALIGN(8) hidThreadStack[0x1000];
 static u8 ALIGN(8) threadStack[0x1000];
 
@@ -37,6 +40,7 @@ void hidThread(void *arg)
                     nfc->DisplayError("File is encrypted, decrypt it using amiitool to use it with wumiibo.");
                 else if(ret == -2)
                     nfc->DisplayError("File could not be parsed.");
+                
             }
             else if(nfc->m_selected == 1)
             {

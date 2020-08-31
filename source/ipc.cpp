@@ -57,11 +57,11 @@ char* GetCommandName(u16 cmdid)
 void IPC::Debug(u32 *cmdbuf, char *str)
 {
     //logStr("Commmandddd");
-    logPrintf("%s : %s\n", str, GetCommandName(cmdbuf[0] >> 16));
+    printf("%s : %s\n", str, GetCommandName(cmdbuf[0] >> 16));
     u32 normal = cmdbuf[0] >> 6 & 0x3F;
     u32 translate = cmdbuf[0] & 0x3F;
     for(int i = 0; i < normal; i++)
-        logPrintf("cmdbuf[%d]:%X\n", i + 1, cmdbuf[i + 1]);
+        printf("cmdbuf[%d]:%X\n", i + 1, cmdbuf[i + 1]);
 }
 
 int ShowResult(Result ret)
@@ -132,36 +132,23 @@ void IPC::HandleCommands(NFC* nfc)
 
         case 4: // StopCommunication
         {
-            if(nfc->GetTagState() == TagStates::Uninitialized || nfc->GetTagState() == TagStates::ScanningStopped)
-                cmdbuf[1] = 0xC8A17600;
-            else
-                cmdbuf[1] = 0;
+            cmdbuf[1] = 0;
             cmdbuf[0] = IPC_MakeHeader(cmdid, 1, 0);
             break;
         }
 
         case 5: // StartTagScanning
         {
-            if(nfc->GetTagState() != TagStates::ScanningStopped && nfc->GetTagState() != TagStates::OutOfRange)
-                cmdbuf[1] = 0xC8A17600;
-            else
-            {
-                cmdbuf[1] = 0;
-                nfc->SetTagState(TagStates::Scanning);
-            }
+            cmdbuf[1] = 0;
+            nfc->SetTagState(TagStates::Scanning);
             cmdbuf[0] = IPC_MakeHeader(cmdid, 1, 0);
             break;
         }
 
         case 6: // StopTagScanning
         {
-            if(nfc->GetTagState() == TagStates::Uninitialized || nfc->GetTagState() == TagStates::ScanningStopped)
-                cmdbuf[1] = 0xC8A17600;
-            else
-            {
-                nfc->SetTagState(TagStates::ScanningStopped);
-                cmdbuf[1] = 0;
-            }
+            nfc->SetTagState(TagStates::ScanningStopped);
+            cmdbuf[1] = 0;
             cmdbuf[0] = IPC_MakeHeader(cmdid, 1, 0);
             break;
         }
@@ -436,7 +423,7 @@ void IPC::HandleCommands(NFC* nfc)
         }
 
         default:
-            logPrintf("Unimplemented Command %08X\n", cmdbuf[0]);
+            printf("Unimplemented Command %08X\n", cmdbuf[0]);
     }
     Debug(cmdbuf, "Sent");
 }

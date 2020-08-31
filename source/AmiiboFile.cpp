@@ -36,6 +36,16 @@ int AmiiboFile::ParseDecryptedFile()
       return -2;
    
    memcpy((u8*)&m_identityblock, (u8*)&m_decrypteddata[0x1DC], 8);
+  
+   // Next 6 lines just bswap a u32
+   uint8_t temp = m_identityblock.series;
+   m_identityblock.series = m_identityblock.figure_type;
+   m_identityblock.figure_type = temp;
+   temp = m_identityblock.model_no[0];
+   m_identityblock.model_no[0] = m_identityblock.model_no[1];
+   m_identityblock.model_no[1] = temp;
+   //-----
+
    m_plaindata.pagex4_byte3 = m_decrypteddata[0x2B];
    m_plaindata.flag = m_decrypteddata[0x2C];
    m_plaindata.lastwritedate = Date(bswap_16(*(uint16_t*)&m_decrypteddata[0x32]));
