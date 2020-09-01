@@ -51,12 +51,14 @@ extern "C"
         gdbHioDevInit();
         gdbHioDevRedirectStdStreams(false, true, false);
         fsSysInit();
+        psInit();
         logInit();
     }
 
     // this is called after main exits
     void __appExit() {
         logExit();
+        psExit();
         fsExit();
         cfguExit();
         srvSysExit();

@@ -9,6 +9,7 @@ class AmiiboFile
         Result WriteDecryptedFile(const char *name);
         int ParseDecryptedFile();
         void SaveDecryptedFile();
+        void GenerateRandomUID();
         Amiibo_PlainData *GetPlainData() {
             return &m_plaindata;
         };

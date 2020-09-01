@@ -224,14 +224,6 @@ void IPC::HandleCommands(NFC* nfc)
             tag->id_offset_size = 7;
             tag->unk_x2 = 0;
             tag->unk_x3 = 2;
-            tag->id[0] = 0xAA;
-            tag->id[1] = 0xBB;
-            tag->id[2] = 0xCC;
-            tag->id[3] = 0xDD;
-            tag->id[4] = 0xEE;
-            tag->id[5] = 0xFF;
-            tag->id[6] = 0xAA;
-            tag->id[7] = 0x01;
             memcpy(&cmdbuf[2], tag, 0x2C);
             cmdbuf[0] = IPC_MakeHeader(cmdid, 12, 0);
             cmdbuf[1] = 0;

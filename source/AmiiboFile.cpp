@@ -1,4 +1,6 @@
 #include <cstring>
+#include <ctime>
+#include <cstdlib>
 #include "bswap.h"
 #include "AmiiboFile.h"
 
@@ -26,6 +28,13 @@ Result AmiiboFile::WriteDecryptedFile(const char *name)
    return 0;
 }
 
+void AmiiboFile::GenerateRandomUID()
+{
+   u8 rand[8];
+   PS_GenerateRandomBytes(&rand[0], 8);
+   for(int i = 0; i < 8; i++)
+      m_taginfo.id[i] = rand[i];
+}
 
 int AmiiboFile::ParseDecryptedFile()
 {
@@ -34,6 +43,12 @@ int AmiiboFile::ParseDecryptedFile()
 
    if(m_decrypteddata[0x02] != 0xF && m_decrypteddata[0x3] != 0xE0)
       return -2;
+
+   if(m_decrypteddata[532] == 0)
+      GenerateRandomUID();
+   else
+      memcpy(&m_taginfo.id[0], &m_decrypteddata[533], 7);
+   
    
    memcpy((u8*)&m_identityblock, (u8*)&m_decrypteddata[0x1DC], 8);
   
@@ -73,11 +88,13 @@ int AmiiboFile::ParseDecryptedFile()
 
 void AmiiboFile::SaveDecryptedFile()
 {
+   m_decrypteddata[532] = 1;
    m_decrypteddata[0x2B] = m_plaindata.pagex4_byte3;
    m_decrypteddata[0x2C] = m_plaindata.flag;
    // memcpy(&m_decrypteddata[0x32], &m_plaindata.lastwritedate.getraw(), 2); //TODO fix this
    m_plaindata.writecounter = bswap_16(m_plaindata.writecounter += 1);
    memcpy(&m_decrypteddata[0xB4], &m_plaindata.writecounter, 2);
+   memcpy(&m_decrypteddata[533], &m_taginfo.id[0], 7);
    if(m_plaindata.flag << 27 >> 31)
    {
       memcpy(&m_decrypteddata[0x4C], m_plaindata.settings.mii, 0x60);
