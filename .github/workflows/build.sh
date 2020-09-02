@@ -8,8 +8,7 @@ git clone https://github.com/smealum/ctrulib.git
 cd ctrulib/libctru
 make install release -j
 
-# Install firmtool and makerom
-pip3 install git+https://github.com/TuxSH/firmtool.git
+# Install makerom
 cd /build_dir
 export ctr_ver=16
 curl -LJO https://github.com/jakcron/Project_CTR/releases/download/v0."$ctr_ver"/makerom_0"$ctr_ver"_ctrtool.zip
