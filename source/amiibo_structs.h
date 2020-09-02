@@ -98,5 +98,6 @@ enum TagStates {
     Scanning = 2, /// Currently scanning for Amiibo tags. Set by AmiiboStartScanning() when successful.
 	InRange = 3, /// Amiibo tag is in range. The state automatically changes to this when the state was previously value 2, without using any Amiibo service commands.
 	OutOfRange = 4, /// Amiibo tag is now out of range, where the Amiibo tag was previously in range. This occurs automatically without using any Amiibo service commands. Once this state is entered, it won't automatically change to anything else when the tag is moved in range again. Hence, if you want to keep doing tag scanning after this, you must stop+start scanning.
-	DataReady = 5 /// Amiibo tag data was successfully loaded. This is set by AmiiboLoadAmiiboData() when successful.
+	DataReady = 5, /// Amiibo tag data was successfully loaded. This is set by AmiiboLoadAmiiboData() when successful.
+	IdentificationDataReady = 6  /// Amiibo Identifcation data was successfully loaded .
 };

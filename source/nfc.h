@@ -23,8 +23,8 @@ class NFC
         AmiiboFile *GetAmiibo(){
             return &m_amiibo;
         }
-        int GetTagState(){
-            return m_state.Get();
+        int GetTagState(bool skip = true){
+            return m_state.Get(skip);
         }
         void SetTagState(int state){
             m_state = state;

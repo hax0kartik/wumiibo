@@ -44,12 +44,6 @@ int AmiiboFile::ParseDecryptedFile()
    if(m_decrypteddata[0x02] != 0xF && m_decrypteddata[0x3] != 0xE0)
       return -2;
 
-   if(m_decrypteddata[532] == 0)
-      GenerateRandomUID();
-   else
-      memcpy(&m_taginfo.id[0], &m_decrypteddata[533], 7);
-   
-   
    memcpy((u8*)&m_identityblock, (u8*)&m_decrypteddata[0x1DC], 8);
   
    // Next 6 lines just bswap a u32
@@ -83,6 +77,14 @@ int AmiiboFile::ParseDecryptedFile()
       }
    }
    m_parsed = 1;
+   if(m_decrypteddata[532] == 0)
+   {
+      GenerateRandomUID();
+      return 1;
+   }
+   else
+      memcpy(&m_taginfo.id[0], &m_decrypteddata[533], 7);
+
    return 0;
 }
 

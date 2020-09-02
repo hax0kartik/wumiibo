@@ -100,7 +100,7 @@ void IPC::HandleCommands(NFC* nfc)
     u16 cmdid = cmdbuf[0] >> 16;
     Debug(cmdbuf, "Recieved");
 
-    if(cmdid != 0xF && cmdid != 0xD && m_hasCalled0xC)
+    if(cmdid != 0xF && cmdid != 0xD && cmdid != 0x1A && m_hasCalled0xC)
     {
         printf("Updating Last called Command Time\n");
         nfc->UpdateLastCommandTime(osGetTime()); 
@@ -155,8 +155,9 @@ void IPC::HandleCommands(NFC* nfc)
 
         case 7: // LoadAmiiboData
         {
+            if(nfc->GetTagState() == TagStates::InRange)
+                nfc->SetTagState(TagStates::DataReady);
             // return 0xC8C1760A if data is invalid
-            nfc->SetTagState(TagStates::DataReady);
             cmdbuf[0] = IPC_MakeHeader(cmdid, 1, 0);
             cmdbuf[1] = 0;
             break;
@@ -203,9 +204,11 @@ void IPC::HandleCommands(NFC* nfc)
         {
             cmdbuf[0] = IPC_MakeHeader(cmdid, 2, 0);
             cmdbuf[1] = 0;
-            cmdbuf[2] = nfc->GetTagState();
+            cmdbuf[2] = nfc->GetTagState(false);
             if(nfc->GetTagState() == TagStates::Scanning && nfc->GetAmiibo()->HasParsed())
                 nfc->SetTagState(TagStates::InRange);
+            if(nfc->GetTagState() == TagStates::DataReady)
+                nfc->SetTagState(TagStates::IdentificationDataReady);
             break;
         }
 
@@ -357,6 +360,8 @@ void IPC::HandleCommands(NFC* nfc)
 
         case 0x1A: // 
         {
+            if(nfc->GetTagState() == TagStates::InRange)
+                nfc->SetTagState(TagStates::DataReady);
             cmdbuf[0] = IPC_MakeHeader(cmdid, 1, 0);
             cmdbuf[1] = 0;
             break;

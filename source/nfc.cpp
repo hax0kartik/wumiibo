@@ -38,6 +38,11 @@ void hidThread(void *arg)
                     nfc->DisplayError("File is encrypted, decrypt it using amiitool to use it with wumiibo.");
                 else if(ret == -2)
                     nfc->DisplayError("File could not be parsed.");
+                else if(ret == 1) // A new UID was generated, save this back to file.
+                {
+                    nfc->GetAmiibo()->SaveDecryptedFile();
+                    nfc->GetAmiibo()->WriteDecryptedFile(str);
+                }
 
             }
             else if(nfc->m_selected == 1)
@@ -47,7 +52,10 @@ void hidThread(void *arg)
                 nfc->SetTagState(TagStates::OutOfRange);
                 svcSignalEvent(*nfc->GetOutOfRangeEvent());
             }
-            
+            else if(nfc->m_selected == 2)
+            {
+                nfc->GetAmiibo()->GenerateRandomUID();
+            }
         }
     }
 }
@@ -87,7 +95,7 @@ void NFC::DisplayError(const char *str)
 
 void NFC::DrawMenu(NFC *nfc)
 {
-    int size = 2;
+    int size = 3;
     svcKernelSetState(0x10000, 2|1);
 
     Draw_SetupFramebuffer();
@@ -98,6 +106,7 @@ void NFC::DrawMenu(NFC *nfc)
     Draw_DrawString(120, 10, COLOR_TITLE, "Wumiibo Menu");
     Draw_DrawString(15, 20, COLOR_WHITE, "Select a figure.");
     Draw_DrawString(15, 30, COLOR_WHITE, "Force Stop Emulation.");
+    Draw_DrawString(15, 40, COLOR_WHITE, "Randomize UID(Bypass 1 use per day limit)");
     if(nfc->GetAmiibo()->HasParsed())
     {
         Draw_DrawString(10, 230, COLOR_WHITE, "Currently Emulating:");
