@@ -39,9 +39,21 @@ class TagState
 
         int Get() {
             // printf("Tag State is %s\n", GetTagStateAsStr(m_tagstate));
+            if(m_tagstate == TagStates::InRange)
+                m_inrangecounter++;
+            else
+                m_inrangecounter = 0;
+
+            if(m_inrangecounter > 10) // Game is definately stuck in a loop waiting for tagstate to change
+            {
+                m_tagstate = TagStates::OutOfRange;
+                m_inrangecounter = 0;
+            }
+            
             return m_tagstate; 
         }
 
     private:
+        uint8_t m_inrangecounter = 0;
         int m_tagstate = 0;
 };

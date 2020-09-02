@@ -38,6 +38,7 @@ void hidThread(void *arg)
                     nfc->DisplayError("File is encrypted, decrypt it using amiitool to use it with wumiibo.");
                 else if(ret == -2)
                     nfc->DisplayError("File could not be parsed.");
+
             }
             else if(nfc->m_selected == 1)
             {

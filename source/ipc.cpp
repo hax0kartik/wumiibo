@@ -230,6 +230,14 @@ void IPC::HandleCommands(NFC* nfc)
             break;
         }
 
+        case 0x12: // CommunicationGetResult
+        {
+            cmdbuf[0] = IPC_MakeHeader(0x12, 2, 0);
+            cmdbuf[1] = 0;
+            cmdbuf[2] = 0;
+            break;
+        }
+
         case 0x13: // OpenAppData
         {
             Amiibo_PlainData *plaindata = nfc->GetAmiibo()->GetPlainData();
