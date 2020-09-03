@@ -2,23 +2,37 @@
 #include <cstring>
 #include <cstdlib>
 #include <string>
-#define NO_OF_AMIIBOS_PER_PAGE 21
+#define NO_OF_AMIIBOS_PER_PAGE 20
 extern "C"
 {
     #include "input.h"
     #include "draw.h"
 }
 
+int ShowString(char *str)
+{
+    u32 key = waitInput();
+    return 0;
+}
+
 Result DirectoryLister::PopulateEntries(char *directory)
 {
-    memset(m_filename, 0, 50);
+    memset(m_filename, 0, 100);
     strcpy(m_filename, directory);
     Result ret = 0;
+    u8 *back_dir = (u8*)".\0.\0.\0\0\0";
+    memcpy(&m_entries[0].name[0], &back_dir[0], 2 * 4); 
+    m_entries[0].attributes |= FS_ATTRIBUTE_DIRECTORY;
     ret = FSUSER_OpenArchive(&m_archive, ARCHIVE_SDMC, fsMakePath(PATH_EMPTY, NULL));
     if(ret) return ret;
     ret = FSUSER_OpenDirectory(&m_fshandle, m_archive, fsMakePath(PATH_ASCII, directory));
     if(ret) return ret;
-    ret = FSDIR_Read(m_fshandle, (uint32_t*)&m_readentries, 50, m_entries);
+    ret = FSDIR_Read(m_fshandle, (uint32_t*)&m_readentries, 49, &m_entries[1]);
+    m_readentries += 1;
+    if(ret) return ret;
+    ret = FSDIR_Close(m_fshandle);
+    if(ret) return ret;
+    ret = FSUSER_CloseArchive(m_archive);
     return ret;
 }
 
@@ -38,6 +52,8 @@ Result DirectoryLister::ListEntries()
         if(page != prevpage)
             Draw_ClearFramebuffer();
         Draw_DrawString(80, 10, COLOR_TITLE, "Wumiibo Menu(Amiibo Selection)");
+        Draw_DrawString(5, 230, COLOR_TITLE, "Current Location:");
+        Draw_DrawString(110, 230, RGB565(0, 0x1F, 0), GetSelectedFileLocation());
         for(int i = 0; i < NO_OF_AMIIBOS_PER_PAGE && page * NO_OF_AMIIBOS_PER_PAGE + i < m_readentries; i++)
         {
             if((page * NO_OF_AMIIBOS_PER_PAGE + i) == m_selected) 
@@ -60,7 +76,42 @@ Result DirectoryLister::ListEntries()
 
         if(key & BUTTON_A)
         {
-            break;
+            if(m_entries[m_selected].attributes & FS_ATTRIBUTE_DIRECTORY)
+            {
+                if(m_entries[m_selected].name[0] != 0x2E && m_entries[m_selected].name[1] != 0x2E)
+                {
+                    ConstructFileLocation();
+                    char newname[100];
+                    memset(newname, 0, 100);
+                    strcpy(newname, m_filename);
+                    PopulateEntries(newname);
+                    Draw_ClearFramebuffer();
+                    m_selected = 0;
+                }
+                else
+                {
+                    int len = strlen(m_filename);
+                    int i = len;
+                    for(; i > 0; i--)
+                    {
+                        if(m_filename[i] == '/')
+                            break;
+                    }
+                    memset(&m_filename[i], 0, len - i);
+                    if(m_filename[0] == 0) m_filename[0]= '/';
+                    char newname[100];
+                    memset(newname, 0, 100);
+                    strcpy(newname, m_filename);
+                    PopulateEntries(newname);
+                    Draw_ClearFramebuffer();
+                    m_selected = 0;
+                }
+                
+            }
+            else
+            {
+                break;
+            }
         }
 
         if(key & BUTTON_B)
