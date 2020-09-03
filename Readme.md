@@ -8,7 +8,7 @@ Amiibo Emulation for 3ds.
 
  * Put the downloaded bins in `sd:/wumiibo` (Max 50)
 
- * Enable Title patching from luma menu
+ * Enable Title patching from luma menu. (As shown here: https://github.com/LumaTeam/Luma3DS/wiki/Optional-features)
  
  * Open your game and reach to the screen where it tells you to place your amiibo.
  
