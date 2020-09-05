@@ -51,6 +51,7 @@ void hidThread(void *arg)
                 nfc->GetDirectory()->Reset();
                 nfc->SetTagState(TagStates::OutOfRange);
                 svcSignalEvent(*nfc->GetOutOfRangeEvent());
+                svcClearEvent(*nfc->GetInRangeEvent());
             }
             else if(nfc->m_selected == 2)
             {

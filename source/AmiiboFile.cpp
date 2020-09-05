@@ -66,16 +66,18 @@ int AmiiboFile::ParseDecryptedFile()
       m_plaindata.settings.flags = m_decrypteddata[0x2C] & 0xF;
       m_plaindata.settings.countrycodeid = m_decrypteddata[0x2D];
       m_plaindata.settings.setupdate = Date(bswap_16(*(uint16_t*)&m_decrypteddata[0x30]));
-      if(m_plaindata.flag << 26 >> 31)
-      {
-         memcpy((uint8_t*)&m_plaindata.appDataConfig.appid, (uint8_t*)&m_decrypteddata[0xB6], 4);
-         memcpy((uint8_t*)&m_plaindata.appDataConfig.titleid, (uint8_t*)&m_decrypteddata[0xAC], 8);
-         m_plaindata.appDataConfig.titleid = bswap_64(m_plaindata.appDataConfig.titleid);
-         m_plaindata.appDataConfig.counter = bswap_16(*((uint16_t*)&m_decrypteddata[0xB4]));
-         m_plaindata.appDataConfig.unk = m_plaindata.flag >> 4;
-         memcpy((uint8_t*)&m_plaindata.AppData[0], (uint8_t*)&m_decrypteddata[0xDC], 0xD8);
-      }
    }
+   
+   if(m_plaindata.flag << 26 >> 31)
+   {
+      memcpy((uint8_t*)&m_plaindata.appDataConfig.appid, (uint8_t*)&m_decrypteddata[0xB6], 4);
+      memcpy((uint8_t*)&m_plaindata.appDataConfig.titleid, (uint8_t*)&m_decrypteddata[0xAC], 8);
+      m_plaindata.appDataConfig.titleid = bswap_64(m_plaindata.appDataConfig.titleid);
+      m_plaindata.appDataConfig.counter = bswap_16(*((uint16_t*)&m_decrypteddata[0xB4]));
+      m_plaindata.appDataConfig.unk = m_plaindata.flag >> 4;
+      memcpy((uint8_t*)&m_plaindata.AppData[0], (uint8_t*)&m_decrypteddata[0xDC], 0xD8);
+   }
+   
    m_parsed = 1;
    if(m_decrypteddata[532] == 0)
    {
@@ -97,6 +99,7 @@ void AmiiboFile::SaveDecryptedFile()
    m_plaindata.writecounter = bswap_16(m_plaindata.writecounter += 1);
    memcpy(&m_decrypteddata[0xB4], &m_plaindata.writecounter, 2);
    memcpy(&m_decrypteddata[533], &m_taginfo.id[0], 7);
+
    if(m_plaindata.flag << 27 >> 31)
    {
       memcpy(&m_decrypteddata[0x4C], m_plaindata.settings.mii, 0x60);
@@ -104,13 +107,14 @@ void AmiiboFile::SaveDecryptedFile()
       m_decrypteddata[0x2D] = m_plaindata.settings.countrycodeid;
       uint16_t date = bswap_16(m_plaindata.settings.setupdate.getraw());
       memcpy(&m_decrypteddata[0x30], &date, 2);
-      if(m_plaindata.flag << 26 >> 31)
-      {
-         memcpy((uint8_t*)&m_decrypteddata[0xB6], (uint8_t*)&m_plaindata.appDataConfig.appid, 4);
-         memcpy((uint8_t*)&m_decrypteddata[0xAC], (uint8_t*)&m_plaindata.appDataConfig.titleid, 8);
+   }
+
+   if(m_plaindata.flag << 26 >> 31)
+   {
+      memcpy((uint8_t*)&m_decrypteddata[0xB6], (uint8_t*)&m_plaindata.appDataConfig.appid, 4);
+      memcpy((uint8_t*)&m_decrypteddata[0xAC], (uint8_t*)&m_plaindata.appDataConfig.titleid, 8);
          //m_plaindata.appDataConfig.counter = bswap_16(*((uint16_t*)&m_decrypteddata[0xB4]));
          //m_plaindata.appDataConfig.unk = m_plaindata.flag >> 4;
-         memcpy((uint8_t*)&m_decrypteddata[0xDC], (uint8_t*)&m_plaindata.AppData[0], 0xD8);
-      }
+      memcpy((uint8_t*)&m_decrypteddata[0xDC], (uint8_t*)&m_plaindata.AppData[0], 0xD8);
    }
 }

@@ -53,15 +53,16 @@ Result DirectoryLister::ListEntries()
             Draw_ClearFramebuffer();
         Draw_DrawString(80, 10, COLOR_TITLE, "Wumiibo Menu(Amiibo Selection)");
         Draw_DrawString(5, 230, COLOR_TITLE, "Current Location:");
-        Draw_DrawString(110, 230, RGB565(0, 0x1F, 0), GetSelectedFileLocation());
+        Draw_DrawString(110, 230, RGB565(0, 0x3F, 0), GetSelectedFileLocation());
         for(int i = 0; i < NO_OF_AMIIBOS_PER_PAGE && page * NO_OF_AMIIBOS_PER_PAGE + i < m_readentries; i++)
         {
             if((page * NO_OF_AMIIBOS_PER_PAGE + i) == m_selected) 
                 Draw_DrawCharacter(5, 30 + 10 * i, COLOR_TITLE, '>');
             else
                 Draw_DrawCharacter(5, 30 + 10 * i, COLOR_TITLE, ' ');
-
-	        Draw_DrawString16(15, 30 + 10 * i, COLOR_WHITE, m_entries[page * NO_OF_AMIIBOS_PER_PAGE + i].name);
+            
+            u16 color = (m_entries[page * NO_OF_AMIIBOS_PER_PAGE + i].attributes & FS_ATTRIBUTE_DIRECTORY) ? 0x9492 : COLOR_WHITE;
+	        Draw_DrawString16(15, 30 + 10 * i, color, m_entries[page * NO_OF_AMIIBOS_PER_PAGE + i].name);
         }
 	    u32 key = waitInput();
         if(key & BUTTON_DOWN)
@@ -98,7 +99,7 @@ Result DirectoryLister::ListEntries()
                             break;
                     }
                     memset(&m_filename[i], 0, len - i);
-                    if(m_filename[0] == 0) m_filename[0]= '/';
+                    if(m_filename[0] == 0) strcpy(m_filename, "/wumiibo");
                     char newname[100];
                     memset(newname, 0, 100);
                     strcpy(newname, m_filename);

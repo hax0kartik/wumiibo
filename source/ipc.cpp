@@ -57,11 +57,11 @@ char* GetCommandName(u16 cmdid)
 void IPC::Debug(u32 *cmdbuf, char *str)
 {
     //logStr("Commmandddd");
-    logPrintf("%s : %s(cmdbuf[0]:%08X)\n", str, GetCommandName(cmdbuf[0] >> 16), cmdbuf[0]);
+    printf("%s : %s(cmdbuf[0]:%08X)\n", str, GetCommandName(cmdbuf[0] >> 16), cmdbuf[0]);
     u32 normal = cmdbuf[0] >> 6 & 0x3F;
     u32 translate = cmdbuf[0] & 0x3F;
     for(int i = 0; i < normal; i++)
-        logPrintf("cmdbuf[%d]:%X\n", i + 1, cmdbuf[i + 1]);
+        printf("cmdbuf[%d]:%X\n", i + 1, cmdbuf[i + 1]);
 }
 
 void IPC::HandleCommands(NFC* nfc)
@@ -69,7 +69,7 @@ void IPC::HandleCommands(NFC* nfc)
     u32 *cmdbuf = getThreadCommandBuffer();
     u16 cmdid = cmdbuf[0] >> 16;
     Debug(cmdbuf, "Recieved");
-
+    
     if(cmdid != 0xF && cmdid != 0xD && cmdid != 0x1A && m_hasCalled0xC)
     {
         printf("Updating Last called Command Time\n");
@@ -390,7 +390,7 @@ void IPC::HandleCommands(NFC* nfc)
         {
             Amiibo_PlainData *plaindata = nfc->GetAmiibo()->GetPlainData();
             uint32_t isSet = (plaindata->flag << 26 >> 31);
-            logPrintf("IsSet %d\n", isSet);
+            printf("IsSet %d\n", isSet);
             cmdbuf[0] = IPC_MakeHeader(cmdid, 2, 0);
             cmdbuf[1] = 0;
             cmdbuf[2] = isSet;
@@ -398,7 +398,7 @@ void IPC::HandleCommands(NFC* nfc)
         }
 
         default:
-            logPrintf("Unimplemented Command %08X\n", cmdbuf[0]);
+            printf("Unimplemented Command %08X\n", cmdbuf[0]);
     }
     Debug(cmdbuf, "Sent");
 }
