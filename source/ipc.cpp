@@ -57,11 +57,11 @@ char* GetCommandName(u16 cmdid)
 void IPC::Debug(u32 *cmdbuf, char *str)
 {
     //logStr("Commmandddd");
-    printf("%s : %s(cmdbuf[0]:%08X)\n", str, GetCommandName(cmdbuf[0] >> 16), cmdbuf[0]);
+    logPrintf("%s : %s(cmdbuf[0]:%08X)\n", str, GetCommandName(cmdbuf[0] >> 16), cmdbuf[0]);
     u32 normal = cmdbuf[0] >> 6 & 0x3F;
     u32 translate = cmdbuf[0] & 0x3F;
     for(int i = 0; i < normal; i++)
-        printf("cmdbuf[%d]:%X\n", i + 1, cmdbuf[i + 1]);
+        logPrintf("cmdbuf[%d]:%X\n", i + 1, cmdbuf[i + 1]);
 }
 
 void IPC::HandleCommands(NFC* nfc)
@@ -330,8 +330,7 @@ void IPC::HandleCommands(NFC* nfc)
 
         case 0x1A: // MountRomData
         {
-            if(nfc->GetTagState() == TagStates::InRange)
-                nfc->SetTagState(TagStates::DataReady);
+            nfc->SetTagState(TagStates::DataReady);
             cmdbuf[0] = IPC_MakeHeader(cmdid, 1, 0);
             cmdbuf[1] = 0;
             break;
@@ -398,7 +397,7 @@ void IPC::HandleCommands(NFC* nfc)
         }
 
         default:
-            printf("Unimplemented Command %08X\n", cmdbuf[0]);
+            logPrintf("Unimplemented Command %08X\n", cmdbuf[0]);
     }
     Debug(cmdbuf, "Sent");
 }

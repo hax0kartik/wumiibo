@@ -1,13 +1,16 @@
 #include "nfc.h"
 #include <cstring>
 #include <cstdlib>
+extern "C" {
+#include "logger.h"
+}
+
 static u8 ALIGN(8) hidThreadStack[0x1000];
 static u8 ALIGN(8) threadStack[0x1000];
 
 extern "C"
 {
-    bool hidShouldUseIrrst(void)
-    {
+    bool hidShouldUseIrrst(void) {
         return false;
     }
 }
@@ -23,6 +26,7 @@ void hidThread(void *arg)
         u32 combo = nfc->GetMenuCombo();
         if((keysheld & combo) == combo) 
         {
+            nfc->StartMenu();
             //printf("KEY_START pressed\n");
             nfc->DrawMenu(nfc);
             if(nfc->m_selected == 0)
@@ -57,6 +61,7 @@ void hidThread(void *arg)
             {
                 nfc->GetAmiibo()->GenerateRandomUID();
             }
+            nfc->FinishMenu();
         }
     }
 }
@@ -81,33 +86,37 @@ void EventThread(void *arg)
 
 void NFC::DisplayError(const char *str)
 {
-    svcKernelSetState(0x10000, 2|1);
-    Draw_SetupFramebuffer();
-    Draw_Lock();
     Draw_ClearFramebuffer();
-    Draw_FlushFramebuffer();
     Draw_DrawString(120, 10, COLOR_TITLE, "Wumiibo Menu");
     Draw_DrawString(15, 20, COLOR_WHITE, str);
     u32 key = waitInput();
+}
+
+void NFC::StartMenu()
+{
+    Draw_Lock();
+    svcKernelSetState(0x10000, 2|1);
+    svcSleepThread(5 * 1000 * 100LL);
+    Draw_SetupFramebuffer();
+    Draw_ClearFramebuffer();
+    Draw_FlushFramebuffer();
+}
+
+void NFC::FinishMenu()
+{
     Draw_RestoreFramebuffer();
-    Draw_Unlock();
     svcKernelSetState(0x10000, 2 | 1);
+    svcSleepThread(5 * 1000 * 100LL);
+    Draw_Unlock();
 }
 
 void NFC::DrawMenu(NFC *nfc)
 {
     int size = 3;
-    svcKernelSetState(0x10000, 2|1);
-
-    Draw_SetupFramebuffer();
-    Draw_Lock();
-    Draw_ClearFramebuffer();
-    Draw_FlushFramebuffer();
-
     Draw_DrawString(120, 10, COLOR_TITLE, "Wumiibo Menu");
     Draw_DrawString(15, 20, COLOR_WHITE, "Select a figure.");
     Draw_DrawString(15, 30, COLOR_WHITE, "Force Stop Emulation.");
-    Draw_DrawString(15, 40, COLOR_WHITE, "Randomize UID(Bypass 1 use per day limit)");
+    Draw_DrawString(15, 40, COLOR_WHITE, "Randomize UID(Bypass 1 use per day limit).");
     if(nfc->GetAmiibo()->HasParsed())
     {
         Draw_DrawString(10, 230, COLOR_WHITE, "Currently Emulating:");
@@ -150,9 +159,6 @@ void NFC::DrawMenu(NFC *nfc)
         }
 
     }
-    Draw_RestoreFramebuffer();
-    Draw_Unlock();
-    svcKernelSetState(0x10000, 2 | 1);
 }
 
 void NFC::CreateHidThread()
@@ -166,4 +172,13 @@ void NFC::CreateHidThread()
         MyThread_Create(&m_eventthread, EventThread, this, threadStack, 0x1000, 15, -2);
         m_hidthreadcreated = 1;
     }
+}
+
+void NFC::ReadConfiguration()
+{
+    //char *name = "/settings.ini";
+    Result ret = m_config.ReadINI("/settings.ini");
+    if(ret != 0) return;
+    ret = m_config.ParseINI();
+    if(ret != 0) return;
 }

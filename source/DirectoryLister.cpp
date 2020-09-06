@@ -39,12 +39,7 @@ Result DirectoryLister::PopulateEntries(char *directory)
 // Following code has been copied from Rosalina
 Result DirectoryLister::ListEntries()
 {
-    svcKernelSetState(0x10000, 2|1);
-
-	Draw_SetupFramebuffer();
-	Draw_Lock();
-	Draw_ClearFramebuffer();
-	Draw_FlushFramebuffer();
+    Draw_ClearFramebuffer();
     m_selected = 0;
     int page = 0, prevpage = 0;
     while(true)
@@ -143,9 +138,6 @@ Result DirectoryLister::ListEntries()
         page = m_selected / NO_OF_AMIIBOS_PER_PAGE;
 
     }
-	Draw_RestoreFramebuffer();
-	Draw_Unlock();
-	svcKernelSetState(0x10000, 2|1);
     return m_selected;
 }
 

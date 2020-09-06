@@ -3,6 +3,7 @@
 #include "DirectoryLister.h"
 #include "AmiiboFile.h"
 #include "TagState.h"
+#include "Configuration.h"
 extern "C"
 {
     #include "input.h"
@@ -12,11 +13,12 @@ extern "C"
 class NFC
 {
     public:
+        void ReadConfiguration();
         void CreateHidThread();
+        static void StartMenu();
+        static void FinishMenu();
         static void DrawMenu(NFC *nfc);
         static void DisplayError(const char *str);
-        static u32 PromptForNewCombo(u32 combo);
-        void ShowWarning();
         DirectoryLister *GetDirectory(){
             return &m_directory;
         }
@@ -42,13 +44,12 @@ class NFC
             return m_lastcommandtime;
         }
         u32 GetMenuCombo(){
-            return m_menucombo;
-        }
-        void SetMenuCombo(u32 combo){
-            m_menucombo = combo;
+            u32 val = m_config.GetMenuCombo();
+            if(val != 0)
+                return val;
+            return KEY_DOWN | KEY_START | KEY_L;
         }
         int m_selected = 0;
-
     private:
         MyThread m_hidthread;
         MyThread m_eventthread;
@@ -59,5 +60,5 @@ class NFC
         Handle m_taginrange;
         Handle m_tagoutofrange;
         u64 m_lastcommandtime;
-        u32 m_menucombo = KEY_START | KEY_L | KEY_DDOWN;
+        Configuration m_config;
 };

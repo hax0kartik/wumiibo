@@ -6,6 +6,7 @@ extern "C"
     #include "services.h"
     #include "mythread.h"
     #include "logger.h"
+    #include "csvc.h"
 }
 #define MAX_SESSIONS 1
 #define SERVICE_ENDPOINTS 3
@@ -26,16 +27,21 @@ static Result should_terminate(int *term_request) {
 
 extern "C"
 {
-    u8 heap[0x8000];
-    size_t heap_size = 0x8000;
+    extern u32 __ctru_heap, __ctru_heap_size, __ctru_linear_heap, __ctru_linear_heap_size;
+    extern char *fake_heap_start;
+    extern char *fake_heap_end;
 
     // this is called before main
     void __system_allocateHeaps(void)
     {
-        extern char *fake_heap_start;
-        extern char *fake_heap_end;
-        fake_heap_start = (char*)heap;
-        fake_heap_end = (char*)heap + heap_size;
+        u32 tmp=0;
+	    __ctru_heap_size = 0x8000;
+	    // Allocate the application heap
+	    __ctru_heap = 0x08000000;
+	    svcControlMemoryEx(&tmp, __ctru_heap, 0x0, __ctru_heap_size, MEMOP_ALLOC, (MemPerm)(MEMPERM_READWRITE | MEMREGION_BASE), false);
+	    // Set up newlib heap
+	    fake_heap_start = (char*)__ctru_heap;
+	    fake_heap_end = fake_heap_start + __ctru_heap_size;
     }
 
     void __appInit() {
@@ -93,6 +99,7 @@ int main() {
     int nmbActiveHandles;
     IPC ipc;
     NFC nfc;
+    nfc.ReadConfiguration();
     nfc.CreateHidThread();
 
     Handle *hndNfuU;
