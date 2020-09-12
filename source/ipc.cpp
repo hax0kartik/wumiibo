@@ -178,7 +178,10 @@ void IPC::HandleCommands(NFC* nfc)
             if(nfc->GetTagState() == TagStates::Scanning && nfc->GetAmiibo()->HasParsed())
                 nfc->SetTagState(TagStates::InRange);
             if(nfc->GetTagState() == TagStates::DataReady)
-                nfc->SetTagState(TagStates::IdentificationDataReady);
+            {
+                if(nfc->GetAmiibo()->GetPlainData()->flag << 26 >> 31)
+                    nfc->SetTagState(TagStates::IdentificationDataReady);
+            }
             break;
         }
 
@@ -298,6 +301,7 @@ void IPC::HandleCommands(NFC* nfc)
 
         case 0x18: // GetAmiiboConfig
         {
+            memset(&cmdbuf[2], 0, 16 * 4);
             Amiibo_AmiiboConfig config;
             Amiibo_PlainData *plaindata = nfc->GetAmiibo()->GetPlainData();
             Amiibo_IdentificationBlock *identityblock = nfc->GetAmiibo()->GetIdentity();
@@ -345,6 +349,18 @@ void IPC::HandleCommands(NFC* nfc)
             break;
         }
 
+        case 0x401: // Format
+        {
+            Amiibo_PlainData *plaindata = nfc->GetAmiibo()->GetPlainData();
+            plaindata->flag = 0;
+            cmdbuf[0] = IPC_MakeHeader(cmdid, 1, 0);
+            cmdbuf[1] = 0;
+            char *str = nfc->GetDirectory()->GetSelectedFileLocation();
+            nfc->GetAmiibo()->SaveDecryptedFile();
+            Result ret = nfc->GetAmiibo()->WriteDecryptedFile(str);
+            break;
+        }
+
         case 0x402: // GetAppDataConfig
         {
             Amiibo_PlainData *plaindata = nfc->GetAmiibo()->GetPlainData();
@@ -382,6 +398,18 @@ void IPC::HandleCommands(NFC* nfc)
             plaindata->flag = ((plaindata->flag & 0xF0) | (plaindata->settings.flags & 0xF) | 0x10);
             cmdbuf[0] = IPC_MakeHeader(cmdid, 1, 0);
             cmdbuf[1] = 0;
+            break;
+        }
+
+        case 0x406: // FormatAppDataSection
+        {
+            Amiibo_PlainData *plaindata = nfc->GetAmiibo()->GetPlainData();
+            plaindata->flag &= 0xDFu;
+            cmdbuf[0] = IPC_MakeHeader(cmdid, 1, 0);
+            cmdbuf[1] = 0;
+            char *str = nfc->GetDirectory()->GetSelectedFileLocation();
+            nfc->GetAmiibo()->SaveDecryptedFile();
+            Result ret = nfc->GetAmiibo()->WriteDecryptedFile(str);
             break;
         }
 

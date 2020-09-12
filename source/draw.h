@@ -80,16 +80,13 @@ u32 Draw_DrawString(u32 posX, u32 posY, u32 color, const char *string);
 u32 Draw_DrawString16(u32 posX, u32 posY, u32 color, uint16_t *string);
 u32 Draw_DrawFormattedString(u32 posX, u32 posY, u32 color, const char *fmt, ...);
 
+Result Draw_AllocateFramebufferCache(u32 size);
+void Draw_FreeFramebufferCache(void);
 void Draw_FillFramebuffer(u32 value);
 void Draw_ClearFramebuffer(void);
-void Draw_SetupFramebuffer(void);
+u32 Draw_SetupFramebuffer(void);
 void Draw_RestoreFramebuffer(void);
 void Draw_FlushFramebuffer(void);
-u32 Draw_GetCurrentFramebufferAddress(bool top, bool left);
-
-void Draw_CreateBitmapHeader(u8 *dst, u32 width, u32 heigth);
-void Draw_ConvertFrameBufferLine(u8 *line, bool top, bool left, u32 y);
-
 #ifdef __cplusplus
 }
 #endif

@@ -97,16 +97,18 @@ void NFC::StartMenu()
     Draw_Lock();
     svcKernelSetState(0x10000, 2|1);
     svcSleepThread(5 * 1000 * 100LL);
+    Draw_AllocateFramebufferCache(FB_BOTTOM_SIZE);
     Draw_SetupFramebuffer();
     Draw_ClearFramebuffer();
-    Draw_FlushFramebuffer();
 }
 
 void NFC::FinishMenu()
 {
+    Draw_FlushFramebuffer();
     Draw_RestoreFramebuffer();
     svcKernelSetState(0x10000, 2 | 1);
     svcSleepThread(5 * 1000 * 100LL);
+    Draw_FreeFramebufferCache();
     Draw_Unlock();
 }
 
@@ -157,7 +159,7 @@ void NFC::DrawMenu(NFC *nfc)
             nfc->m_selected = -1;
             break;
         }
-
+        Draw_FlushFramebuffer();
     }
 }
 
@@ -174,10 +176,18 @@ void NFC::CreateHidThread()
     }
 }
 
+void NFC::FreeUpThreads()
+{
+    svcCloseHandle(m_taginrange);
+    svcCloseHandle(m_tagoutofrange);
+    MyThread_Join(&m_hidthread, 1e+9);
+    MyThread_Join(&m_hidthread, 1e+9);
+}
+
 void NFC::ReadConfiguration()
 {
     //char *name = "/settings.ini";
-    Result ret = m_config.ReadINI("/settings.ini");
+    Result ret = m_config.ReadINI("/wumiibo.ini");
     if(ret != 0) return;
     ret = m_config.ParseINI();
     if(ret != 0) return;

@@ -50,9 +50,11 @@ int AmiiboFile::ParseDecryptedFile()
    uint8_t temp = m_identityblock.series;
    m_identityblock.series = m_identityblock.figure_type;
    m_identityblock.figure_type = temp;
+   /*
    temp = m_identityblock.model_no[0];
    m_identityblock.model_no[0] = m_identityblock.model_no[1];
    m_identityblock.model_no[1] = temp;
+   */
    //-----
 
    m_plaindata.pagex4_byte3 = m_decrypteddata[0x2B];

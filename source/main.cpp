@@ -199,6 +199,7 @@ int main() {
         }
     } while (!term_request);
 
+    nfc.FreeUpThreads();
     srvUnregisterService("nfc:m");
     srvUnregisterService("nfc:u");
 

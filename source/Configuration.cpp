@@ -42,7 +42,7 @@ static int keystrtokeyval(char *str)
 Result Configuration::ReadINI(const char *loc)
 {
    Handle fshandle;
-   Result ret = FSUSER_OpenFileDirectly(&fshandle, ARCHIVE_SDMC, fsMakePath(PATH_EMPTY, NULL), fsMakePath(PATH_ASCII, "/settings.ini"), FS_OPEN_READ, 0);
+   Result ret = FSUSER_OpenFileDirectly(&fshandle, ARCHIVE_SDMC, fsMakePath(PATH_EMPTY, NULL), fsMakePath(PATH_ASCII, "/wumiibo.ini"), FS_OPEN_READ, 0);
    if(ret) return ret;
    u64 size;
    ret = FSFILE_GetSize(fshandle, &size);

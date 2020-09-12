@@ -15,6 +15,7 @@ class NFC
     public:
         void ReadConfiguration();
         void CreateHidThread();
+        void FreeUpThreads();
         static void StartMenu();
         static void FinishMenu();
         static void DrawMenu(NFC *nfc);
@@ -45,11 +46,10 @@ class NFC
         }
         u32 GetMenuCombo(){
             u32 val = m_config.GetMenuCombo();
-            if(val != 0)
-                return val;
-            return KEY_DOWN | KEY_START | KEY_L;
+            return val;
         }
         int m_selected = 0;
+        s32 m_menurefcount = 0;
     private:
         MyThread m_hidthread;
         MyThread m_eventthread;
