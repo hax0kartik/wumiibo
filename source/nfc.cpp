@@ -3,6 +3,8 @@
 #include <cstdlib>
 extern "C" {
 #include "logger.h"
+#include "memory.h"
+#include "pmdbgext.h"
 }
 
 static u8 ALIGN(8) hidThreadStack[0x1000];
@@ -13,6 +15,20 @@ extern "C"
     bool hidShouldUseIrrst(void) {
         return false;
     }
+}
+
+static u64 GetCurrentGame()
+{
+    pmDbgInit();
+    FS_ProgramInfo programInfo;
+    u64 tid;
+    u32 launchFlags;
+    u32 pid;
+    Result res = PMDBG_GetCurrentAppInfo(&programInfo, &pid, &launchFlags);
+    pmDbgExit();
+    if (R_FAILED(res))
+        return -1;
+    return programInfo.programId;
 }
 
 void hidThread(void *arg)
@@ -31,8 +47,17 @@ void hidThread(void *arg)
             nfc->DrawMenu(nfc);
             if(nfc->m_selected == 0)
             {
+                char folder[30];
+                char stid[16 + 1];
+                memset(folder, 0, 30);
+                strcpy(folder, "/wumiibo/");
                 nfc->GetAmiibo()->Reset();
-                nfc->GetDirectory()->PopulateEntries("/wumiibo");
+                u64 tid = GetCurrentGame();
+                hexItoa(tid, stid, 16, true);
+                stid[17] = 0;
+                strcat(folder, stid);
+                if(R_FAILED(nfc->GetDirectory()->PopulateEntries(folder)))
+                    nfc->GetDirectory()->PopulateEntries("/wumiibo");
                 nfc->GetDirectory()->ListEntries();
                 nfc->GetDirectory()->ConstructFileLocation();
                 char *str = nfc->GetDirectory()->GetSelectedFileLocation();
@@ -165,13 +190,14 @@ void NFC::DrawMenu(NFC *nfc)
 
 void NFC::CreateHidThread()
 {
+    hidSetRepeatParameters(200, 100);
     if(!m_hidthreadcreated)
     {
         svcCreateEvent(&m_taginrange, RESET_ONESHOT);
         svcCreateEvent(&m_tagoutofrange, RESET_ONESHOT);
         // m_selected = 1;
-        MyThread_Create(&m_hidthread, hidThread, this, hidThreadStack, 0x1000, 15, -2);
-        MyThread_Create(&m_eventthread, EventThread, this, threadStack, 0x1000, 15, -2);
+        MyThread_Create(&m_hidthread, hidThread, this, hidThreadStack, 0x1000, 47, -2);
+        MyThread_Create(&m_eventthread, EventThread, this, threadStack, 0x1000, 47, -2);
         m_hidthreadcreated = 1;
     }
 }

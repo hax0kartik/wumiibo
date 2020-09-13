@@ -19,14 +19,14 @@ Option:
 
 AccessControlInfo:
   IdealProcessor                : 1
-  AffinityMask                  : 3
+  AffinityMask                  : 2
 
-  Priority                      : 20
+  Priority                      : 22
 
   DisableDebug                  : false
   EnableForceDebug              : true
   CanWriteSharedPage            : true
-  CanUsePrivilegedPriority      : true
+  CanUsePrivilegedPriority      : false
   CanUseNonAlphabetAndNumber    : false
   PermitMainFunctionArgument    : false
   CanShareDeviceMemory          : false
@@ -37,7 +37,7 @@ AccessControlInfo:
   CoreVersion                   : 2
   DescVersion                   : 2
 
-  MemoryType                    : System
+  MemoryType                    : Base
   HandleTableSize: 150
 
   MemoryMapping:

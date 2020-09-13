@@ -54,10 +54,11 @@ extern "C" {
 #define L_PAYLOAD_BUTTONS      (BUTTON_R1 | BUTTON_A | BUTTON_START | BUTTON_SELECT)
 #define MENU_BUTTONS           (DPAD_BUTTONS | BUTTON_A | BUTTON_START)
 #define PIN_BUTTONS (BUTTON_A | BUTTON_B | BUTTON_X | BUTTON_Y | DPAD_BUTTONS | BUTTON_START | BUTTON_SELECT)
+#define DIRECTIONAL_KEYS        (KEY_DOWN | KEY_UP | KEY_LEFT | KEY_RIGHT)
 
-u32 waitInputWithTimeout(u32 msec);
+u32 waitInputWithTimeout(s32 msec);
 u32 waitInput();
-u32 waitComboWithTimeout(u32 msec);
+u32 waitComboWithTimeout(s32 msec);
 u32 waitCombo();
 u32 getKeysPressed();
 

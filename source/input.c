@@ -1,80 +1,76 @@
 #include "input.h"
 
-u32 waitInputWithTimeout(u32 msec) {
-    bool pressedKey = false;
-    u32 key = 0;
-    u32 n = 0;
+static inline u32 convertHidKeys(u32 keys)
+{
+    // Nothing to do yet
+    return keys;
+}
 
-    //Wait for no keys to be pressed
-    while(HID_PAD && (msec == 0 || n < msec)) {
+u32 waitInputWithTimeout(s32 msec)
+{
+    s32 n = 0;
+    u32 keys;
+
+    do
+    {
+        svcSleepThread(1 * 1000 * 1000LL);
+        n++;
+
+        hidScanInput();
+        keys = convertHidKeys(hidKeysDown()) | (convertHidKeys(hidKeysDownRepeat()) & DIRECTIONAL_KEYS);
+    } while (keys == 0 && (msec < 0 || n < msec));
+
+    return keys;
+}
+
+u32 waitInput(void)
+{
+    return waitInputWithTimeout(-1);
+}
+
+static u32 scanHeldKeys(void)
+{
+    u32 keys;
+    hidScanInput();
+    keys = convertHidKeys(hidKeysHeld());
+    return keys;
+}
+
+u32 waitComboWithTimeout(s32 msec)
+{
+    s32 n = 0;
+    u32 keys = 0;
+    u32 tempKeys = 0;
+
+    // Wait for nothing to be pressed
+    while (scanHeldKeys() != 0 && (msec < 0 || n < msec))
+    {
         svcSleepThread(1 * 1000 * 1000LL);
         n++;
     }
 
-    if(msec != 0 && n >= msec)
+    if (!(msec < 0 || n < msec))
         return 0;
 
-    do {
-        //Wait for a key to be pressed
-        while (!HID_PAD && (msec == 0 || n < msec)) {
-            svcSleepThread(1 * 1000 * 1000LL);
-            n++;
-        }
-
-        if((msec != 0 && n >= msec))
-            return 0;
-
-        key = HID_PAD;
-
-        //Make sure it's pressed
-        for(u32 i = 0x26000; i > 0; i --) {
-            if(key != HID_PAD) break;
-            if(i == 1) pressedKey = true;
-        }
-    } while(!pressedKey);
-
-    return key;
-}
-
-u32 getKeysPressed() {
-    return HID_PAD;
-}
-
-u32 waitInput() {
-    return waitInputWithTimeout(0);
-}
-
-u32 waitComboWithTimeout(u32 msec) {
-    u32 key = 0;
-    u32 n = 0;
-
-    //Wait for no keys to be pressed
-    while(HID_PAD && (msec == 0 || n < msec)) {
+    do
+    {
         svcSleepThread(1 * 1000 * 1000LL);
         n++;
+
+        tempKeys = scanHeldKeys();
+
+        for (u32 i = 0x10000; i > 0; i--)
+        {
+            if (tempKeys != scanHeldKeys()) break;
+            if (i == 1) keys = tempKeys;
+        }
     }
+    while((keys == 0 || scanHeldKeys() != 0) && (msec < 0 || n < msec));
 
-    if((msec != 0 && n >= msec))
-        return 0;
-
-    do {
-        svcSleepThread(1 * 1000 * 1000LL);
-        n++;
-
-        u32 tempKey = HID_PAD;
-
-        for(u32 i = 0x26000; i > 0; i--) {
-            if(tempKey != HID_PAD) break;
-            if(i == 1) key = tempKey;
-        }
-    } while((!key || HID_PAD) && (msec == 0 || n < msec));
-
-    if((msec != 0 && n >= msec))
-        return 0;
-
-    return key;
+    return keys;
 }
 
-u32 waitCombo(void) {
-    return waitComboWithTimeout(0);
+u32 waitCombo(void)
+{
+    return waitComboWithTimeout(-1);
 }
