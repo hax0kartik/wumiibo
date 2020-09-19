@@ -178,10 +178,7 @@ void IPC::HandleCommands(NFC* nfc)
             if(nfc->GetTagState() == TagStates::Scanning && nfc->GetAmiibo()->HasParsed())
                 nfc->SetTagState(TagStates::InRange);
             if(nfc->GetTagState() == TagStates::DataReady)
-            {
-                if(nfc->GetAmiibo()->GetPlainData()->flag << 26 >> 31)
-                    nfc->SetTagState(TagStates::IdentificationDataReady);
-            }
+                nfc->SetTagState(TagStates::IdentificationDataReady);
             break;
         }
 
