@@ -81,6 +81,7 @@ void hidThread(void *arg)
                 nfc->SetTagState(TagStates::OutOfRange);
                 svcSignalEvent(*nfc->GetOutOfRangeEvent());
                 svcClearEvent(*nfc->GetInRangeEvent());
+                logStr("Force stopped called\n");
             }
             else if(nfc->m_selected == 2)
             {
@@ -120,7 +121,7 @@ void NFC::DisplayError(const char *str)
 void NFC::StartMenu()
 {
     Draw_Lock();
-    svcKernelSetState(0x10000, 2|1);
+    svcKernelSetState(0x10000, 4 | 2 | 1);
     svcSleepThread(5 * 1000 * 100LL);
     Draw_AllocateFramebufferCache(FB_BOTTOM_SIZE);
     Draw_SetupFramebuffer();
@@ -131,7 +132,7 @@ void NFC::FinishMenu()
 {
     Draw_FlushFramebuffer();
     Draw_RestoreFramebuffer();
-    svcKernelSetState(0x10000, 2 | 1);
+    svcKernelSetState(0x10000, 4 | 2 | 1);
     svcSleepThread(5 * 1000 * 100LL);
     Draw_FreeFramebufferCache();
     Draw_Unlock();

@@ -46,7 +46,7 @@ char* GetCommandName(u16 cmdid)
 		case 0x0022: cmdstr = "Cmd22"; break;
         case 0x401: cmdstr = "Reset"; break;
         case 0x402: cmdstr = "GetAppDataConfig"; break;
-        case 0x407: cmdstr = "IsAppdatInited called"; break; 
+        case 0x407: cmdstr = "IsAppdataInited"; break; 
 		case 0x404: cmdstr = "SetAmiiboSettings"; break;
         default:
             cmdstr = "Unknown Command called"; break;
@@ -72,7 +72,6 @@ void IPC::HandleCommands(NFC* nfc)
     
     if(cmdid != 0xF && cmdid != 0xD && cmdid != 0x1A && m_hasCalled0xC)
     {
-        printf("Updating Last called Command Time\n");
         nfc->UpdateLastCommandTime(osGetTime()); 
     }
     switch(cmdid)

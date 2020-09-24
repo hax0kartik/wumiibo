@@ -54,8 +54,8 @@ extern "C"
         if(hidInit() != 0)
             CRASH;
 
-        gdbHioDevInit();
-        gdbHioDevRedirectStdStreams(false, true, false);
+       // gdbHioDevInit();
+       // gdbHioDevRedirectStdStreams(false, true, false);
         fsSysInit();
         psInit();
         logInit();

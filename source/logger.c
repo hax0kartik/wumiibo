@@ -45,8 +45,9 @@ void logPrintf(const char *format, ...) {
     va_start(args, format);
 	vsnprintf(buffer, 1500, format, args);
 
-	if(!logEnabled) 
-		printf(buffer);
+	if(!logEnabled)
+		;
+		//printf(buffer);
     else
 		logStr(buffer);
     va_end(args);
