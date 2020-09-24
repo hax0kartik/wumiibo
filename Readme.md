@@ -2,6 +2,8 @@
 Amiibo Emulation for 3ds.
 
 ## How To Use
+You need to have the latest luma for this to work correctly.
+
  * Put the `0004013000004002` folder in `luma/titles/`
  
  * Download the amiibo you want to emulate from [here](https://hax0kartik.github.io/amiibo-generator). All this website does is produce a bin file with amiiboID in it, so the produced file can be shared freely!
@@ -15,6 +17,8 @@ Amiibo Emulation for 3ds.
  * Press L + DOWN + START to bring up Wumiibo Menu and select the amiibo you wish to emulate.
  
  * If everything went successfully, your amiibo should be emulated now.
+
+If you want to use your real amiibos, you'll need to disable wumiibo by disabling game patching from luma menu.
 
 ## Workaround for games which freeze
 
