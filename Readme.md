@@ -1,4 +1,8 @@
 # Wumiibo
+![License](https://img.shields.io/badge/License-GPLv3-blue.svg)
+[![GitHub release](https://img.shields.io/github/release/hax0kartik/wumiibo.svg)](https://github.com/hax0kartik/wumiibo/releases/latest/)
+[![Github all releases](https://img.shields.io/github/downloads/hax0kartik/wumiibo/total.svg)](https://GitHub.com/hax0kartik/wumiibo/releases/latest/)
+
 Amiibo Emulation for 3ds.
 
 ## How To Use
