@@ -104,7 +104,7 @@ void EventThread(void *arg)
             continue;
         svcSignalEvent(*taginrange);
         u64 time = osGetTime();
-        if((time - nfc->GetLastCommandTime()) > 3000)
+        if((time - nfc->GetLastCommandTime()) > 4000)
             svcSignalEvent(*tagoutofrange);
     }
     MyThread_Exit();

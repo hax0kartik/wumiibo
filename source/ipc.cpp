@@ -252,12 +252,17 @@ void IPC::HandleCommands(NFC* nfc)
 
         case 0x15: // GetAppData
         {
+            uint32_t size = cmdbuf[1];
+            if(size > 0x800)
+                size = 0x800;
             Amiibo_PlainData *plaindata = nfc->GetAmiibo()->GetPlainData();
             cmdbuf[0] = IPC_MakeHeader(cmdid, 1, 2);
             cmdbuf[1] = 0;
-            cmdbuf[2] = IPC_Desc_StaticBuffer(0xD8, 0);
-            memset(&statbuf, 0, 0xD8);
-            memcpy(&statbuf, &plaindata->AppData[0], 0xD8);
+            cmdbuf[2] = IPC_Desc_StaticBuffer(size, 0);
+            if(size > 0xD8)
+                size = 0xD8;
+            memset(&statbuf, 0, size);
+            memcpy(&statbuf, &plaindata->AppData[0], size);
             cmdbuf[3] = (u32)&statbuf;
             break;
         }
