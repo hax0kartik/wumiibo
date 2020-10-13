@@ -41,20 +41,17 @@ class TagState
             // printf("Tag State is %s\n", GetTagStateAsStr(m_tagstate));
             if(skip)
                 return m_tagstate;
-            if(m_tagstate == TagStates::InRange || m_tagstate == TagStates::IdentificationDataReady)
+            if(m_tagstate == TagStates::InRange || m_tagstate == TagStates::IdentificationDataReady || m_tagstate == TagStates::DataReady)
             {
-                if(m_tagstate == m_prevtagstate)
-                    m_tagcounter++;
-                else
+                if(m_tagstate != m_prevtagstate)
+                {
                     m_tagcounter = 0;
+                    m_time = osGetTime();
+                }
+                else
+                    m_tagcounter++;
             }
 
-            if(m_tagcounter > 10) // Game is definately stuck in a loop waiting for tagstate to change
-            {
-                m_tagstate = TagStates::OutOfRange;
-                m_tagcounter = 0;
-            }
-            
             m_prevtagstate = m_tagstate;
             return m_tagstate; 
         }
@@ -63,4 +60,5 @@ class TagState
         uint8_t m_tagcounter = 0;
         int m_tagstate = 0;
         int m_prevtagstate = 0;
+        u64 m_time = 0;
 };

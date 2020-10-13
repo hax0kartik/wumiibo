@@ -25,10 +25,17 @@ class AmiiboFile
         void Reset(){
             m_parsed = 0; // Is Enough
         }
+
+        bool HasChanged() {
+            uint8_t temp = m_haschanged;
+            if(temp) m_haschanged = 0;
+            return temp > 0;
+        }
     private:
         uint8_t m_decrypteddata[540];
         Amiibo_PlainData m_plaindata;
         Amiibo_IdentificationBlock m_identityblock;
         Amiibo_TagInfo m_taginfo;
         uint8_t m_parsed = 0;
+        uint8_t m_haschanged = 0;
 };

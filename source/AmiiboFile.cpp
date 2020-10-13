@@ -79,6 +79,7 @@ int AmiiboFile::ParseDecryptedFile()
    }
    
    m_parsed = 1;
+   m_haschanged = 1;
    if(m_decrypteddata[532] == 0)
    {
       GenerateRandomUID();

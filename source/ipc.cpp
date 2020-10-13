@@ -70,9 +70,19 @@ void IPC::HandleCommands(NFC* nfc)
     u16 cmdid = cmdbuf[0] >> 16;
     Debug(cmdbuf, "Recieved");
     
-    if(cmdid != 0xF && cmdid != 0xD && cmdid != 0x1A && m_hasCalled0xC)
+    if(cmdid != 0xF && cmdid != 0xD && m_hasCalled0xC)
     {
+        logPrintf("Updating last Update time\n");
         nfc->UpdateLastCommandTime(osGetTime()); 
+    }
+    
+    else if(cmdid == 0xF || cmdid == 0xD)
+    {
+        if(nfc->GetAmiibo()->HasParsed() && (nfc->GetTagState() == TagStates::Scanning || nfc->GetTagState() == TagStates::ScanningStopped))
+        {
+            nfc->UpdateSignal(1);
+            svcSignalEvent(*nfc->GetInRangeEvent());
+        }
     }
     switch(cmdid)
     {
@@ -175,7 +185,17 @@ void IPC::HandleCommands(NFC* nfc)
             cmdbuf[1] = 0;
             cmdbuf[2] = nfc->GetTagState(false);
             if(nfc->GetTagState() == TagStates::Scanning && nfc->GetAmiibo()->HasParsed())
+            {
                 nfc->SetTagState(TagStates::InRange);
+                svcSignalEvent(*nfc->GetInRangeEvent());
+            }
+
+            if(nfc->GetAmiibo()->HasChanged())
+            {
+                svcClearEvent(*nfc->GetOutOfRangeEvent());
+                svcSignalEvent(*nfc->GetInRangeEvent());
+            }
+
             break;
         }
 
@@ -270,7 +290,7 @@ void IPC::HandleCommands(NFC* nfc)
         case 0x16: // WriteAppData
         {
             Amiibo_PlainData *plaindata = nfc->GetAmiibo()->GetPlainData();
-            memcpy(&plaindata->AppData[0], (void*)cmdbuf[11], 0xD8);
+            memcpy(&plaindata->AppData[0], (void*)cmdbuf[11], cmdbuf[1]);
             cmdbuf[0] = IPC_MakeHeader(cmdid, 1, 0);
             cmdbuf[1] = 0;
             char *str = nfc->GetDirectory()->GetSelectedFileLocation();

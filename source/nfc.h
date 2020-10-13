@@ -48,12 +48,20 @@ class NFC
             u32 val = m_config.GetMenuCombo();
             return val;
         }
+        void UpdateSignal(u32 val){
+            m_wassignalled = val;
+        }
+        u32 GetSignal(){
+            return m_wassignalled;
+        }
+        
         int m_selected = 0;
         s32 m_menurefcount = 0;
+        MyThread m_eventthread;
     private:
         MyThread m_hidthread;
-        MyThread m_eventthread;
         uint8_t m_hidthreadcreated = 0;
+        uint8_t m_wassignalled = 0;
         DirectoryLister m_directory;
         AmiiboFile m_amiibo;
         TagState m_state;

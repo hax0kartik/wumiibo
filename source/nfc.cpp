@@ -31,6 +31,33 @@ static u64 GetCurrentGame()
     return programInfo.programId;
 }
 
+void EventThread(void *arg)
+{
+    NFC *nfc = (NFC*)arg;
+    Handle *taginrange = nfc->GetInRangeEvent();
+    Handle *tagoutofrange = nfc->GetOutOfRangeEvent();
+    uint8_t doonce = 0;
+    while(1)
+    {
+        svcSleepThread(0.1e+9);
+        if(!(nfc->GetAmiibo()->HasParsed()))
+                continue;
+        
+        if(nfc->GetSignal() == 0 && (nfc->GetTagState() == TagStates::Scanning || nfc->GetTagState() == TagStates::ScanningStopped))
+        {
+            svcSignalEvent(*taginrange);
+        }
+
+        if((osGetTime() - nfc->GetLastCommandTime()) > 4000)
+        {
+            nfc->UpdateLastCommandTime(osGetTime());
+            svcSignalEvent(*tagoutofrange);
+            svcWaitSynchronization(*taginrange, U64_MAX);
+        }
+    }
+    MyThread_Exit();
+}
+
 void hidThread(void *arg)
 {
     NFC *nfc = (NFC*)arg;
@@ -87,27 +114,17 @@ void hidThread(void *arg)
             {
                 nfc->GetAmiibo()->GenerateRandomUID();
             }
+            else if(nfc->m_selected == 3)
+            {
+                svcSignalEvent(*nfc->GetInRangeEvent());
+            }
+            else if(nfc->m_selected == 4)
+            {
+                svcSignalEvent(*nfc->GetOutOfRangeEvent());
+            }
             nfc->FinishMenu();
         }
     }
-}
-
-void EventThread(void *arg)
-{
-    NFC *nfc = (NFC*)arg;
-    Handle *taginrange = nfc->GetInRangeEvent();
-    Handle *tagoutofrange = nfc->GetOutOfRangeEvent();
-    while(1)
-    {
-        svcSleepThread(0.1e+9);
-        if(!(nfc->GetAmiibo()->HasParsed()))
-            continue;
-        svcSignalEvent(*taginrange);
-        u64 time = osGetTime();
-        if((time - nfc->GetLastCommandTime()) > 4000)
-            svcSignalEvent(*tagoutofrange);
-    }
-    MyThread_Exit();
 }
 
 void NFC::DisplayError(const char *str)
@@ -140,11 +157,13 @@ void NFC::FinishMenu()
 
 void NFC::DrawMenu(NFC *nfc)
 {
-    int size = 3;
+    int size = 5;
     Draw_DrawString(120, 10, COLOR_TITLE, "Wumiibo Menu");
     Draw_DrawString(15, 20, COLOR_WHITE, "Select a figure.");
     Draw_DrawString(15, 30, COLOR_WHITE, "Force Stop Emulation.");
     Draw_DrawString(15, 40, COLOR_WHITE, "Randomize UID(Bypass 1 use per day limit).");
+    Draw_DrawString(15, 50, COLOR_WHITE, "Signal TagInRangeEvent.");
+    Draw_DrawString(15, 60, COLOR_WHITE, "Signal TagOutOfRangeEvent.");
     if(nfc->GetAmiibo()->HasParsed())
     {
         Draw_DrawString(10, 230, COLOR_WHITE, "Currently Emulating:");
