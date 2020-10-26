@@ -22,3 +22,4 @@ make clean && make -j2
 #Build helper
 cd wumiibohelper
 make clean && make -j
+mv wumiibohelper.3dsx ../0004013000004002/wumiibohelper.3dsx
