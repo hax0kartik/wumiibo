@@ -1,4 +1,5 @@
-# Wumiibo <img src="wumiibohelper/gfx/icon.png" height = "100" style="vertical-align:middle"/>
+# Wumiibo 
+<img src="wumiibohelper/gfx/icon.png"/>
 
 ![License](https://img.shields.io/badge/License-GPLv3-blue.svg)
 [![GitHub release](https://img.shields.io/github/release/hax0kartik/wumiibo.svg)](https://github.com/hax0kartik/wumiibo/releases/latest/)
