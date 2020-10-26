@@ -20,3 +20,5 @@ jobs:
       with:
         name: 0004013000004002
         path: ./0004013000004002/
+        name: wumiibohelper.3dsx
+        path: ./wumiibohelper/wumiibohelper.3dsx

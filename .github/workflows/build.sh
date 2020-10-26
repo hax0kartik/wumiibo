@@ -18,3 +18,7 @@ chmod +x /usr/bin/makerom && chmod +x /usr/bin/ctrtool
 
 #Build wumiibo
 make clean && make -j2
+
+#Build helper
+cd wumiibohelper
+make clean && make -j
