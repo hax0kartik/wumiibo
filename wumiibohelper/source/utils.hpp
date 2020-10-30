@@ -13,6 +13,7 @@ class Utils
         void ReadAmiibosJson(std::string loc);
         void DownloadGamesIDJson();
         void DownloadAmiibosJson();
+        void DownloadAndExtractLatestReleaseZip();
         void PopulateAmiiboMap(const uint64_t *tids, size_t count);
         void GenerateAmiibos();
         void GenerateAmiibosForTitle(u64 tid);

@@ -1,4 +1,5 @@
 #include <iostream>
+#include <malloc.h>
 #include <3ds.h>
 #include "ui.hpp"
 #include "app.hpp"
@@ -10,6 +11,8 @@ int main()
     acInit();
     amInit();
     cfguInit();
+    u32 *socbuf = (u32*)memalign(0x1000, 0x100000);
+    socInit(socbuf, 0x100000);
     //ui.debug = true;
 	APT_SetAppCpuTimeLimit(30);
 	aptSetSleepAllowed(false);
@@ -73,6 +76,7 @@ int main()
     std::cout << "[+] Generated.\n";
     freeze;
     */
+    socExit();
     amExit();
     acExit();
     return 0;

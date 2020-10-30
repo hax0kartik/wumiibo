@@ -58,12 +58,12 @@ extern "C"
        // gdbHioDevRedirectStdStreams(false, true, false);
         fsSysInit();
         psInit();
-        logInit();
+      //  logInit();
     }
 
     // this is called after main exits
     void __appExit() {
-        logExit();
+       // logExit();
         psExit();
         fsExit();
         cfguExit();

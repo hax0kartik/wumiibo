@@ -17,6 +17,7 @@ class App
         std::string m_name = "Wumiibo Amiibo Generator\n";
         Titles m_titles;
         int m_selected = 0;
+        bool m_connected = false;
         C2D_Image m_image;
         uint64_t *m_tids;
 };

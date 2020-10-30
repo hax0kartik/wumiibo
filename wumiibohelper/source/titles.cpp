@@ -52,7 +52,7 @@ void Titles::PopulateSMDHArray(uint64_t *titles, uint32_t count)
         descstr.clear();
         descstr.shrink_to_fit();
         u32 mediatype = titles[i] == m_gamecardid ? MEDIATYPE_GAME_CARD : MEDIATYPE_SD;
-        u32 archivepath[4] = {(u32) (titles[i] & 0xFFFFFFFF), (u32) ((titles[i] >> 32) & 0xFFFFFFFF), MEDIATYPE_SD, 0x00000000};
+        u32 archivepath[4] = {(u32) (titles[i] & 0xFFFFFFFF), (u32) ((titles[i] >> 32) & 0xFFFFFFFF), mediatype, 0x00000000};
         if(R_SUCCEEDED(FSUSER_OpenFileDirectly(&filehandle, ARCHIVE_SAVEDATA_AND_CONTENT, 
             fs_make_path_binary(archivepath, sizeof(archivepath)), fs_make_path_binary(filepath, sizeof(filepath)), FS_OPEN_READ, 0))) 
         {

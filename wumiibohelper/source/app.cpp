@@ -178,32 +178,30 @@ void App::DoStuffBeforeMain()
     std::string str = "Checking if internet is connected..";
     ui.top_func = std::bind(DrawLoadingScreen, &m_toplock, m_image);
     ui.bot_func = std::bind(DrawLoadingBarAndText, &m_botlock, &str);
-    svcSleepThread(2e+9);
+   // svcSleepThread(2e+9);
     u32 status = 0;
     ACU_GetStatus(&status);
     if(status == 3) 
     {
+        m_connected = true;
         LightLock_Lock(&m_botlock);
-        str = "Connected.";
+        str = "Connected.\nRetrieving data from github...";
         LightLock_Unlock(&m_botlock);
         
-        m_utils.ReadGamesIDJson("romfs:/gameids.json");
-        m_utils.ReadAmiibosJson("romfs:/amiibos.json");
-
-       // util.DownloadGamesIDJson();
-       // util.DownloadAmiibosJson();
+        m_utils.DownloadGamesIDJson();
+        m_utils.DownloadAmiibosJson();
     }
     else
     {
         LightLock_Lock(&m_botlock);
-        str = "Not Connected. Reading files from romfs..";
+        str = "Not Connected.\nReading files from romfs..";
         LightLock_Unlock(&m_botlock);
 
         m_utils.ReadGamesIDJson("romfs:/gameids.json");
         m_utils.ReadAmiibosJson("romfs:/amiibos.json");
     }
 
-    svcSleepThread(1e+9);
+   // svcSleepThread(1e+9);
     LightLock_Lock(&m_botlock);
     str = "Scanning for compatible titles...";
     LightLock_Unlock(&m_botlock);
@@ -220,7 +218,7 @@ void App::DoStuffBeforeMain()
     str = "Titles found: " + std::to_string(count);
     LightLock_Unlock(&m_botlock);
 
-    svcSleepThread(4e+9);
+    //svcSleepThread(4e+9);
     ui.bot_func = nullptr;
 }
 
@@ -231,11 +229,8 @@ void App::MainLoop()
     options.push_back("Generate amiibos for game");
 
     std::vector<std::string> desc;
-    desc.push_back("Description: Downloads and installs wumiibo from github.");
+    desc.push_back("Description: Downloads and installs latest wumiibo.");
     desc.push_back("Description: Generate compatible amiibos for a game.");
-
-    ui.top_func = std::bind(DrawMainMenuTop, &m_toplock, m_image, &m_selected, desc);
-    ui.bot_func = std::bind(DrawMainMenu, &m_botlock, &m_selected, options);
     int page = 0;
     int size = 0;
     int amiibos = 0;
@@ -251,6 +246,12 @@ void App::MainLoop()
         }
         if(m_state == 0)
         {
+            if(ui.bot_func == nullptr)
+            {
+                ui.top_func = std::bind(DrawMainMenuTop, &m_toplock, m_image, &m_selected, desc);
+                ui.bot_func = std::bind(DrawMainMenu, &m_botlock, &m_selected, options);
+            }
+
             LightLock_Lock(&m_botlock);
 
             if(keysDown() & KEY_DOWN)
@@ -271,7 +272,30 @@ void App::MainLoop()
                 m_selected = 0;
             LightLock_Unlock(&m_botlock);
         }
+        else if(m_state == 1)
+        {
+            if(ui.bot_func == nullptr)
+            {
+                if(!m_connected)
+                {
+                    str = "Not Connected to Internet. Press B.";
+                    ui.bot_func = std::bind(DrawTextInCentre, false, &m_botlock, &str);
+                    continue;
+                }
+                str = "Downloading latest release...";
+                ui.bot_func = std::bind(DrawLoadingBarAndText, &m_botlock, &str);
+                ui.top_func = std::bind(DrawLoadingScreen, &m_toplock, m_image);
+                m_utils.DownloadAndExtractLatestReleaseZip();
+                str = "Downloaded!\nYou'll need to restart to apply the changes.\nPress B.";
+                ui.bot_func = std::bind(DrawTextInCentre, false, &m_botlock, &str);
+            }
 
+            if(keysDown() & KEY_B)
+            {
+                ui.bot_func = nullptr;
+                m_state = 0;
+            }
+        }
         else if(m_state == 2)
         {
             if(ui.bot_func == nullptr)
@@ -303,6 +327,12 @@ void App::MainLoop()
                 m_state = 3;
             }
 
+            if(keysDown() & KEY_B)
+            {
+                ui.bot_func = nullptr;
+                m_state = 0;
+            }
+
             if(m_selected < 0)
                 m_selected = size - 1;
             
@@ -323,7 +353,7 @@ void App::MainLoop()
                 ui.bot_func = std::bind(DrawLoadingBarAndText, &m_botlock, &str);
                 ui.top_func = std::bind(DrawLoadingScreen, &m_toplock, m_image);
                 m_utils.GenerateAmiibosForTitle(m_tids[m_selected]);
-                svcSleepThread(1e+9);
+               // svcSleepThread(1e+9);
                 str = "Generated! Press B.";
                 ui.bot_func = std::bind(DrawTextInCentre, false, &m_botlock, &str);
             }

@@ -1,7 +1,9 @@
 #include <iostream>
 #include <algorithm>
 #include <sys/stat.h>
+#include "picounzip.hpp"
 #include "utils.hpp"
+#include "config.hpp"
 
 void Utils::ReadGamesIDJson(std::string loc)
 {
@@ -27,6 +29,43 @@ void Utils::ReadAmiibosJson(std::string loc)
 	fread(m_amiibosjsondata, 1, size, file);
     printf("[*] size of m_amiibosjson is %d\n", size);
 	fclose(file);
+}
+
+void Utils::DownloadGamesIDJson()
+{
+    std::vector<uint8_t> tmp;
+    m_download.GetUrl("https://raw.githubusercontent.com/hax0kartik/wumiibo/master/jsons/gameids.json", tmp);
+    m_gamesidjsondata = new uint8_t[tmp.size()];
+    memcpy(&m_gamesidjsondata[0], tmp.data(), tmp.size());
+}
+
+void Utils::DownloadAmiibosJson()
+{
+    std::vector<uint8_t> tmp;
+    m_download.GetUrl("https://raw.githubusercontent.com/hax0kartik/wumiibo/master/jsons/amiibos.json", tmp);
+    m_amiibosjsondata = new uint8_t[tmp.size()];
+    memcpy(&m_amiibosjsondata[0], tmp.data(), tmp.size());
+}
+
+void Utils::DownloadAndExtractLatestReleaseZip()
+{
+    std::vector<uint8_t> tmp;
+    m_download.GetUrl("https://api.github.com/repos/hax0kartik/wumiibo/releases/latest", tmp);
+    DynamicJsonDocument doc(1 * 1024 * 1024);
+    deserializeJson(doc, (const char*)tmp.data(), tmp.size());
+
+    const char *url = doc["assets"][0]["browser_download_url"];
+    std::string surl = (url);
+    m_download.GetUrl(surl, tmp);
+    FILE *f = fopen("/download.zip", "wb+");
+    fwrite(tmp.data(), tmp.size(), 1, f);
+    fclose(f);
+    picounzip::unzip zip("/download.zip");
+    zip.extractall("/luma/titles/");
+    LumaConfig config;
+    config.ReadConfig();
+    config.EnableGamePatching();
+    config.WriteConfig();
 }
 
 void Utils::PopulateAmiiboMap(const uint64_t *tids, size_t count)

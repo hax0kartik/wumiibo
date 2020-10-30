@@ -59,7 +59,7 @@ void logStr(const char *str) {
     }
 	if(!logEnabled) return;
 	u64 total;
-	IFile_Write(&f, &total, str, strlen(str), FS_WRITE_FLUSH);
+	//IFile_Write(&f, &total, str, strlen(str), FS_WRITE_FLUSH);
 }
 
 void logBuf(char *prefix, u8* data, size_t len) {
@@ -81,7 +81,7 @@ void logExit() {
     if (logger_started <= 0)
         return;
 
-    IFile_Close(&f);
+   // IFile_Close(&f);
     logger_started = 0;
 }
 

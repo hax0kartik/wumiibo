@@ -1,5 +1,11 @@
 #include <3ds.h>
 
+typedef struct 
+{
+    uint8_t name[0x51];
+    uint8_t attributes;
+} DirectoryLister_Filename;
+
 class DirectoryLister
 {
     public:
@@ -21,6 +27,6 @@ class DirectoryLister
         FS_Archive m_archive;
         size_t m_readentries = -1;
         int m_selected = -1;
-        FS_DirectoryEntry m_entries[50];
+        DirectoryLister_Filename m_entries[400];
         char m_filename[100];
 };
