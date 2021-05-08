@@ -42,7 +42,7 @@ ROMFS			:=	romfs
 #GFXBUILD		:=	$(ROMFS)/gfx
 
 APP_TITLE		:=	Wumiibo Helper
-APP_DESCRIPTION	:=	Helper for downloading Wumiibo and amiibo files
+APP_DESCRIPTION	:=	Helper for generating amiibo files
 APP_AUTHOR		:=	hax0kartik
 ICON			:=	gfx/icon.png
 
