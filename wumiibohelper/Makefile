@@ -31,15 +31,20 @@ include $(DEVKITARM)/3ds_rules
 #     - icon.png
 #     - <libctru folder>/default_icon.png
 #---------------------------------------------------------------------------------
-TARGET		:=	$(notdir $(CURDIR))
-BUILD		:=	build
-SOURCES		:=	source
-DATA		:=	data
-INCLUDES	:=	include
-GRAPHICS	:=	gfx
-GFXBUILD	:=	$(BUILD)
-ROMFS		:=	romfs
-#GFXBUILD	:=	$(ROMFS)/gfx
+TARGET			:=	$(notdir $(CURDIR))
+BUILD			:=	build
+SOURCES			:=	source
+DATA			:=	data
+INCLUDES		:=	include
+GRAPHICS		:=	gfx
+GFXBUILD		:=	$(BUILD)
+ROMFS			:=	romfs
+#GFXBUILD		:=	$(ROMFS)/gfx
+
+APP_TITLE		:=	Wumiibo Helper
+APP_DESCRIPTION	:=	Helper for generating amiibo files
+APP_AUTHOR		:=	hax0kartik
+ICON			:=	gfx/icon.png
 
 #---------------------------------------------------------------------------------
 # options for code generation
