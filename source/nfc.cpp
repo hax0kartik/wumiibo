@@ -138,7 +138,7 @@ void NFC::DisplayError(const char *str)
 void NFC::StartMenu()
 {
     Draw_Lock();
-    svcKernelSetState(0x10000, 1 | 2 | 4);
+    svcKernelSetState(0x10000, 1 | 2);
     svcSleepThread(5 * 1000 * 100LL);
     Draw_AllocateFramebufferCache(FB_BOTTOM_SIZE);
     Draw_SetupFramebuffer();
@@ -149,7 +149,7 @@ void NFC::FinishMenu()
 {
     Draw_FlushFramebuffer();
     Draw_RestoreFramebuffer();
-    svcKernelSetState(0x10000, 1 | 2 | 4);
+    svcKernelSetState(0x10000, 1 | 2);
     svcSleepThread(5 * 1000 * 100LL);
     Draw_FreeFramebufferCache();
     Draw_Unlock();
@@ -180,8 +180,8 @@ void NFC::DrawMenu(NFC *nfc)
             else
                 Draw_DrawCharacter(5, 20 + 10 * i, COLOR_TITLE, ' ');
         }
-
-	    u32 key = waitInput();
+        Draw_FlushFramebuffer();
+        u32 key = waitInput();
         if(key & BUTTON_DOWN)
         {
             nfc->m_selected++;
@@ -204,7 +204,6 @@ void NFC::DrawMenu(NFC *nfc)
             nfc->m_selected = -1;
             break;
         }
-        Draw_FlushFramebuffer();
     }
 }
 

@@ -74,9 +74,10 @@ Result DirectoryLister::ListEntries()
                 Draw_DrawCharacter(5, 30 + 10 * i, COLOR_TITLE, ' ');
             
             u16 color = (m_entries[page * NO_OF_AMIIBOS_PER_PAGE + i].attributes & FS_ATTRIBUTE_DIRECTORY) ? 0x9492 : COLOR_WHITE;
-	        Draw_DrawString(15, 30 + 10 * i, color, (const char*)m_entries[page * NO_OF_AMIIBOS_PER_PAGE + i].name);
+            Draw_DrawString(15, 30 + 10 * i, color, (const char*)m_entries[page * NO_OF_AMIIBOS_PER_PAGE + i].name);
         }
-	    u32 key = waitInput();
+        Draw_FlushFramebuffer();
+        u32 key = waitInput();
         if(key & BUTTON_DOWN)
         {
             m_selected++;
@@ -98,6 +99,7 @@ Result DirectoryLister::ListEntries()
                     memset(newname, 0, 100);
                     strcpy(newname, m_filename);
                     PopulateEntries(newname);
+                    Draw_FlushFramebuffer();
                     Draw_ClearFramebuffer();
                     m_selected = 0;
                 }
@@ -116,6 +118,7 @@ Result DirectoryLister::ListEntries()
                     memset(newname, 0, 100);
                     strcpy(newname, m_filename);
                     PopulateEntries(newname);
+                    Draw_FlushFramebuffer();
                     Draw_ClearFramebuffer();
                     m_selected = 0;
                 }
