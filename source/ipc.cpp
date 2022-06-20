@@ -240,7 +240,7 @@ void IPC::HandleCommands(NFC* nfc)
                else
                {
                   cmdbuf[1] = 0xC8A17638; // AppId incorrect
-               }				
+               }
             }
             else
             {
@@ -365,6 +365,13 @@ void IPC::HandleCommands(NFC* nfc)
             memcpy(&cmdbuf[2], identityblock, 0x36);
             cmdbuf[0] = IPC_MakeHeader(cmdid, 15, 0);
             cmdbuf[1] = 0;
+            break;
+        }
+
+        case 0x24: // Custom Command to check if Wumiibo is installed
+        {
+            cmdbuf[0] = IPC_MakeHeader(cmdid, 1, 0);
+            cmdbuf[1] = 1;
             break;
         }
 

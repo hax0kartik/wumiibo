@@ -235,6 +235,9 @@ void App::MainLoop()
     int size = 0;
     int amiibos = 0;
     std::string str;
+
+   // if(m_utils.IsReboot())
+        m_state = 4;
     while(aptMainLoop())
     {
         hidScanInput();
@@ -286,8 +289,10 @@ void App::MainLoop()
                 ui.bot_func = std::bind(DrawLoadingBarAndText, &m_botlock, &str);
                 ui.top_func = std::bind(DrawLoadingScreen, &m_toplock, m_image);
                 m_utils.DownloadAndExtractLatestReleaseZip();
-                str = "Downloaded!\nYou'll need to restart to apply the changes.\nPress B.";
+                str = "Download Complete. Rebooting...";
                 ui.bot_func = std::bind(DrawTextInCentre, false, &m_botlock, &str);
+                svcSleepThread(2e+9);
+                m_utils.Reboot();
             }
 
             if(keysDown() & KEY_B)
@@ -361,6 +366,27 @@ void App::MainLoop()
             if(keysDown() & KEY_B)
             {
                 m_state = 2;
+                ui.bot_func = nullptr;
+            }
+        }
+
+        else if(m_state == 4)
+        {
+            if(ui.bot_func == nullptr)
+            {
+                str = "Verifying installation...";
+                ui.top_func = std::bind(DrawLoadingScreen, &m_toplock, m_image);
+                ui.bot_func = std::bind(DrawTextInCentre, false, &m_botlock, &str);
+                if(m_utils.CheckWumiibo())
+                    str = "Install Complete! Press B.";
+                else
+                    str = "Install Failed!";
+                ui.bot_func = std::bind(DrawTextInCentre, false, &m_botlock, &str);
+            }
+
+            if(keysDown() & KEY_B)
+            {
+                m_state = 0;
                 ui.bot_func = nullptr;
             }
         }

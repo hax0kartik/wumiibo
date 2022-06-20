@@ -20,6 +20,9 @@ class Utils
         int GetCompatibleTitlesFoundCount() {return m_amiibomap.size();};
         uint64_t *GetCompatibleTitles();
         int GetNumberofCompatibleAmiibos(uint64_t tid) { return m_amiibomap[tid].size(); };
+        void Reboot();
+        bool IsReboot();
+        bool CheckWumiibo();
     private:
         uint8_t *m_gamesidjsondata;
         uint8_t *m_amiibosjsondata;

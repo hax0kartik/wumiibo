@@ -41,10 +41,13 @@ GFXBUILD		:=	$(BUILD)
 ROMFS			:=	romfs
 #GFXBUILD		:=	$(ROMFS)/gfx
 
-APP_TITLE		:=	Wumiibo Helper
+APP_TITLE		:=	Wumiibo-Helper
 APP_DESCRIPTION	:=	Helper for generating amiibo files
 APP_AUTHOR		:=	hax0kartik
 ICON			:=	gfx/icon_app.png
+BANNER			:=	cia/banner.png
+AUDIO			:=	cia/audio.cwav
+CIA_RSF			:=	cia/wumiibohelper.rsf
 
 #---------------------------------------------------------------------------------
 # options for code generation
@@ -163,7 +166,7 @@ ifneq ($(ROMFS),)
 	export _3DSXFLAGS += --romfs=$(CURDIR)/$(ROMFS)
 endif
 
-.PHONY: all clean
+.PHONY: all clean cia
 
 #---------------------------------------------------------------------------------
 all: $(BUILD) $(GFXBUILD) $(DEPSDIR) $(ROMFS_T3XFILES) $(T3XHFILES)
@@ -194,8 +197,22 @@ $(GFXBUILD)/%.t3x	$(BUILD)/%.h	:	%.t3s
 	@tex3ds -i $< -H $(BUILD)/$*.h -d $(DEPSDIR)/$*.d -o $(GFXBUILD)/$*.t3x
 
 #---------------------------------------------------------------------------------
-else
+$(BUILD)/icon.icn : $(ICON)
+	@bannertool makesmdh -i $(ICON) -s $(APP_TITLE) -l $(APP_DESCRIPTION) -p $(APP_AUTHOR) -o $(BUILD)/icon.icn
 
+$(BUILD)/banner.bnr : $(BANNER) $(AUDIO)
+	@bannertool makebanner -i $(BANNER) -ca $(AUDIO) -o $(BUILD)/banner.bnr
+
+$(BUILD)/romfs.bin :
+	@3dstool -ctf romfs $(BUILD)/romfs.bin --romfs-dir romfs
+
+cia: $(BUILD) $(BUILD)/icon.icn $(BUILD)/banner.bnr $(BUILD)/romfs.bin $(GFXBUILD) $(DEPSDIR) $(ROMFS_T3XFILES) $(T3XHFILES)
+	@echo Generating cia
+	@$(MAKE) --no-print-directory -C $(BUILD) -f $(CURDIR)/Makefile
+	@makerom -f cia -o $(TARGET).cia -target t -elf $(TARGET).elf -icon $(BUILD)/icon.icn -banner $(BUILD)/banner.bnr -rsf $(CIA_RSF) -romfs $(BUILD)/romfs.bin
+	@echo built ... $(TARGET).cia
+
+else
 #---------------------------------------------------------------------------------
 # main targets
 #---------------------------------------------------------------------------------

@@ -185,3 +185,49 @@ void Utils::GenerateAmiibosForTitle(u64 tid)
     }
     return;
 }
+
+void Utils::Reboot()
+{
+    nsInit();
+    Result ret = NS_RebootToTitle(MEDIATYPE_SD, 0x0004000000DF1100);
+    if(R_FAILED(ret))
+        *(u32*)ret = 0x123; // Shouldn't have happened
+    while(1) ;; // Infinite Loop wait till reboot
+}
+
+bool Utils::IsReboot()
+{
+    uint8_t *firmparams = new uint8_t[0x1000];
+    Result ret = pmAppInit();
+    if(R_SUCCEEDED(ret))
+    {
+        ret = PMAPP_GetFIRMLaunchParams(firmparams, 0x1000);
+        if(R_SUCCEEDED(ret))
+        {
+            u64 tid = 0x0004000000DF1100;
+            return memcmp(firmparams + 0x440, &tid, sizeof(tid)) == 0;
+        }
+    }
+    pmAppExit();
+    delete[] firmparams;
+    return false;
+}
+
+bool Utils::CheckWumiibo()
+{
+    if(R_SUCCEEDED(nfcInit(NFC_OpType_NFCTag)))
+    {
+        Handle nfchandle = nfcGetSessionHandle();
+        /* The below is a special IPC command which is only implemented in wumiibo */
+        u32 *cmdbuf = getThreadCommandBuffer();
+        cmdbuf[0] = IPC_MakeHeader(0x24, 0, 0);
+        if(R_SUCCEEDED(svcSendSyncRequest(nfchandle)))
+        {
+            Result ret = cmdbuf[1];
+            nfcExit();
+            return ret != 0xD900182F;
+        }
+        nfcExit();
+    }
+    return false;
+}
