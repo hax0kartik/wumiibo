@@ -236,7 +236,7 @@ void App::MainLoop()
     int amiibos = 0;
     std::string str;
 
-   // if(m_utils.IsReboot())
+    if(m_utils.IsReboot())
         m_state = 4;
     while(aptMainLoop())
     {
