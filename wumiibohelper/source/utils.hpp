@@ -21,8 +21,10 @@ class Utils
         uint64_t *GetCompatibleTitles();
         int GetNumberofCompatibleAmiibos(uint64_t tid) { return m_amiibomap[tid].size(); };
         void Reboot();
+        void RebootToSelf();
         bool IsReboot();
         bool CheckWumiibo();
+        bool SetWumiiboState(bool newstate);
     private:
         uint8_t *m_gamesidjsondata;
         uint8_t *m_amiibosjsondata;

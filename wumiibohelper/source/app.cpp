@@ -60,7 +60,7 @@ void DrawMainMenu(LightLock *lock, int *selected, const std::vector<std::string>
 {
     LightLock_Lock(lock);
     DrawBars(false, 5.0f);
-    C2D_Text txt[2];
+    C2D_Text txt[3];
     C2D_TextBuf buf = ui.bot_text_buf;
     C2D_TextBufClear(buf);
     float x = 160.0f; float y = 10.0f;
@@ -217,27 +217,34 @@ void App::DoStuffBeforeMain()
     LightLock_Lock(&m_botlock);
     str = "Titles found: " + std::to_string(count);
     LightLock_Unlock(&m_botlock);
-
     //svcSleepThread(4e+9);
     ui.bot_func = nullptr;
 }
 
 void App::MainLoop()
 {
-    std::vector<std::string> options;
-    options.push_back("Download Wumiibo");
-    options.push_back("Generate amiibos for game");
+    const std::vector<std::string> options
+    {
+        "Download Wumiibo",
+        "Generate amiibos for game",
+        "Toggle Wumiibo State"
+    };
 
-    std::vector<std::string> desc;
-    desc.push_back("Description: Downloads and installs latest wumiibo.");
-    desc.push_back("Description: Generate compatible amiibos for a game.");
+    const std::vector<std::string> desc
+    {
+        "Description: Downloads and installs latest wumiibo.",
+        "Description: Generate compatible amiibos for a game.",
+        "Description: Enable/Disable Wumiibo."
+    };
     int page = 0;
     int size = 0;
     int amiibos = 0;
     std::string str;
 
     if(m_utils.IsReboot())
-        m_state = 4;
+        m_state = 5;
+
+    m_havewumiibo = m_utils.CheckWumiibo();
     while(aptMainLoop())
     {
         hidScanInput();
@@ -292,7 +299,7 @@ void App::MainLoop()
                 str = "Download Complete. Rebooting...";
                 ui.bot_func = std::bind(DrawTextInCentre, false, &m_botlock, &str);
                 svcSleepThread(2e+9);
-                m_utils.Reboot();
+                m_utils.RebootToSelf();
             }
 
             if(keysDown() & KEY_B)
@@ -329,7 +336,7 @@ void App::MainLoop()
             if(keysDown() & KEY_A)
             {
                 ui.bot_func = nullptr;
-                m_state = 3;
+                m_state = 4;
             }
 
             if(keysDown() & KEY_B)
@@ -354,6 +361,31 @@ void App::MainLoop()
         {
             if(ui.bot_func == nullptr)
             {
+                if(m_havewumiibo)
+                    str = "Disabling wumiibo..";
+                else
+                    str = "Enabling wumiibo..";
+                ui.bot_func = std::bind(DrawLoadingBarAndText, &m_botlock, &str);
+                ui.top_func = std::bind(DrawLoadingScreen, &m_toplock, m_image);
+                svcSleepThread(1e+9);
+                if(m_utils.SetWumiiboState(!m_havewumiibo))
+                    str = "Done. Press B to exit.";
+                else
+                    str = "Error Occured. Do you have wumiibo installed?";
+                ui.bot_func = std::bind(DrawTextInCentre, false, &m_botlock, &str);
+            }
+
+            if(keysDown() & KEY_B)
+            {
+                m_utils.Reboot();
+                ui.bot_func = nullptr;
+            }
+        }
+
+        else if(m_state == 4)
+        {
+            if(ui.bot_func == nullptr)
+            {
                 str = "Generating all amiibos...";
                 ui.bot_func = std::bind(DrawLoadingBarAndText, &m_botlock, &str);
                 ui.top_func = std::bind(DrawLoadingScreen, &m_toplock, m_image);
@@ -370,15 +402,15 @@ void App::MainLoop()
             }
         }
 
-        else if(m_state == 4)
+        else if(m_state == 5)
         {
             if(ui.bot_func == nullptr)
             {
                 str = "Verifying installation...";
                 ui.top_func = std::bind(DrawLoadingScreen, &m_toplock, m_image);
                 ui.bot_func = std::bind(DrawTextInCentre, false, &m_botlock, &str);
-                if(m_utils.CheckWumiibo())
-                    str = "Install Complete! Press B.";
+                if(m_havewumiibo)
+                    str = "Install Complete! Press B to exit.";
                 else
                     str = "Install Failed!";
                 ui.bot_func = std::bind(DrawTextInCentre, false, &m_botlock, &str);
@@ -386,7 +418,7 @@ void App::MainLoop()
 
             if(keysDown() & KEY_B)
             {
-                m_state = 0;
+                m_utils.Reboot();
                 ui.bot_func = nullptr;
             }
         }

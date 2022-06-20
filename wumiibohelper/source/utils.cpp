@@ -189,6 +189,15 @@ void Utils::GenerateAmiibosForTitle(u64 tid)
 void Utils::Reboot()
 {
     nsInit();
+    Result ret = NS_RebootSystem();
+    if(R_FAILED(ret))
+        *(u32*)ret = 0x122; // Shouldn't have happened
+    while(1) ;; 
+}
+
+void Utils::RebootToSelf()
+{
+    nsInit();
     Result ret = NS_RebootToTitle(MEDIATYPE_SD, 0x0004000000DF1100);
     if(R_FAILED(ret))
         *(u32*)ret = 0x123; // Shouldn't have happened
@@ -230,4 +239,19 @@ bool Utils::CheckWumiibo()
         nfcExit();
     }
     return false;
+}
+
+bool Utils::SetWumiiboState(bool newstate)
+{
+    if(newstate == false) // disable wumiibo
+    {
+        if(rename("/luma/titles/0004013000004002", "/luma/titles/wumiibo") != 0)
+            return false;
+    }
+    else
+    {
+        if(rename("/luma/titles/wumiibo", "/luma/titles/0004013000004002") != 0)
+            return false;
+    }
+    return true;
 }

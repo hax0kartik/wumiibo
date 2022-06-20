@@ -20,4 +20,5 @@ class App
         bool m_connected = false;
         C2D_Image m_image;
         uint64_t *m_tids;
+        bool m_havewumiibo = false;
 };
