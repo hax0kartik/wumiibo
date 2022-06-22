@@ -9,8 +9,8 @@
 class Utils
 {
     public:
-        void ReadGamesIDJson(std::string loc);
-        void ReadAmiibosJson(std::string loc);
+        void ReadGamesIDJson();
+        void ReadAmiibosJson();
         void DownloadGamesIDJson();
         void DownloadAmiibosJson();
         void DownloadAndExtractLatestReleaseZip();

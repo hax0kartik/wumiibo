@@ -191,15 +191,9 @@ void App::DoStuffBeforeMain()
         m_utils.DownloadGamesIDJson();
         m_utils.DownloadAmiibosJson();
     }
-    else
-    {
-        LightLock_Lock(&m_botlock);
-        str = "Not Connected.\nReading files from romfs..";
-        LightLock_Unlock(&m_botlock);
 
-        m_utils.ReadGamesIDJson("romfs:/gameids.json");
-        m_utils.ReadAmiibosJson("romfs:/amiibos.json");
-    }
+    m_utils.ReadGamesIDJson();
+    m_utils.ReadAmiibosJson();
 
    // svcSleepThread(1e+9);
     LightLock_Lock(&m_botlock);

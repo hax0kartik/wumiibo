@@ -5,46 +5,56 @@
 #include "utils.hpp"
 #include "config.hpp"
 
-void Utils::ReadGamesIDJson(std::string loc)
+void Utils::ReadGamesIDJson()
 {
+    std::string loc = "/3ds/wumiibo/gameids.json";
     FILE *file = fopen(loc.c_str(), "rb");
+    if(!file) /* fallback to romfs jsons */
+        file = fopen("romfs:/gameids.json", "rb");
     int size = 0;
-	fseek(file, 0, SEEK_END);
-	size = ftell(file);
-	fseek(file, 0, 0);
-	m_gamesidjsondata = new uint8_t[size];
-	fread(m_gamesidjsondata, 1, size, file);
+    fseek(file, 0, SEEK_END);
+    size = ftell(file);
+    fseek(file, 0, 0);
+    m_gamesidjsondata = new uint8_t[size];
+    fread(m_gamesidjsondata, 1, size, file);
     printf("[*] size of m_gamesidjson is %d\n", size);
-	fclose(file);
+    fclose(file);
 }
 
-void Utils::ReadAmiibosJson(std::string loc)
+void Utils::ReadAmiibosJson()
 {
+    std::string loc = "/3ds/wumiibo/amiibos.json";
     FILE *file = fopen(loc.c_str(), "rb");
+    if(!file) /* fallback to romfs jsons */
+        file = fopen("romfs:/amiibos.json", "rb");
     int size = 0;
-	fseek(file, 0, SEEK_END);
-	size = ftell(file);
-	fseek(file, 0, 0);
-	m_amiibosjsondata = new uint8_t[size];
-	fread(m_amiibosjsondata, 1, size, file);
+    fseek(file, 0, SEEK_END);
+    size = ftell(file);
+    fseek(file, 0, 0);
+    m_amiibosjsondata = new uint8_t[size];
+    fread(m_amiibosjsondata, 1, size, file);
     printf("[*] size of m_amiibosjson is %d\n", size);
-	fclose(file);
+    fclose(file);
 }
 
 void Utils::DownloadGamesIDJson()
 {
     std::vector<uint8_t> tmp;
     m_download.GetUrl("https://raw.githubusercontent.com/hax0kartik/wumiibo/master/jsons/gameids.json", tmp);
-    m_gamesidjsondata = new uint8_t[tmp.size()];
-    memcpy(&m_gamesidjsondata[0], tmp.data(), tmp.size());
+    mkdir("/3ds/wumiibo", 0777); // if fails ignore
+    FILE *f = fopen("/3ds/wumiibo/gameids.json", "wb+");
+    fwrite(tmp.data(), tmp.size(), 1, f);
+    fclose(f);
 }
 
 void Utils::DownloadAmiibosJson()
 {
     std::vector<uint8_t> tmp;
     m_download.GetUrl("https://raw.githubusercontent.com/hax0kartik/wumiibo/master/jsons/amiibos.json", tmp);
-    m_amiibosjsondata = new uint8_t[tmp.size()];
-    memcpy(&m_amiibosjsondata[0], tmp.data(), tmp.size());
+    mkdir("/3ds/wumiibo", 0777); // if fails ignore
+    FILE *f = fopen("/3ds/wumiibo/amiibos.json", "wb+");
+    fwrite(tmp.data(), tmp.size(), 1, f);
+    fclose(f);
 }
 
 void Utils::DownloadAndExtractLatestReleaseZip()
@@ -71,31 +81,31 @@ void Utils::DownloadAndExtractLatestReleaseZip()
 void Utils::PopulateAmiiboMap(const uint64_t *tids, size_t count)
 {
     DynamicJsonDocument doc1(1 * 1024 * 1024);
-	DynamicJsonDocument doc2(1 * 1024 * 1024);
-	deserializeJson(doc1, m_gamesidjsondata);
-	deserializeJson(doc2, m_amiibosjsondata);
+    DynamicJsonDocument doc2(1 * 1024 * 1024);
+    deserializeJson(doc1, m_gamesidjsondata);
+    deserializeJson(doc2, m_amiibosjsondata);
 
-	JsonObject object = doc1.as<JsonObject>();
-	for (JsonPair x : object)
-	{
-		JsonArray y = x.value().as<JsonArray>();
-		for(JsonVariant ids : y)
-		{
-			uint64_t id = strtoll(ids.as<char*>(), NULL, 16);
-			for(int i = 0; i < count; i++)
-			{
-				if(tids[i] == id)
-				{
-					JsonArray amiibos = doc2[x.key().c_str()];
-					std::vector <std::pair<std::string, std::string>> vec;
-					for(int j = 0; j < amiibos.size(); j++)
-						vec.push_back(std::make_pair(amiibos[j][0].as<char*>(), amiibos[j][1].as<char*>()));
-					m_amiibomap[id] = vec;
-					break;		
-				}
-			}
-		}
-	}
+    JsonObject object = doc1.as<JsonObject>();
+    for (JsonPair x : object)
+    {
+        JsonArray y = x.value().as<JsonArray>();
+        for(JsonVariant ids : y)
+        {
+            uint64_t id = strtoll(ids.as<char*>(), NULL, 16);
+            for(int i = 0; i < count; i++)
+            {
+                if(tids[i] == id)
+                {
+                    JsonArray amiibos = doc2[x.key().c_str()];
+                    std::vector <std::pair<std::string, std::string>> vec;
+                    for(int j = 0; j < amiibos.size(); j++)
+                        vec.push_back(std::make_pair(amiibos[j][0].as<char*>(), amiibos[j][1].as<char*>()));
+                    m_amiibomap[id] = vec;
+                    break;
+                }
+            }
+        }
+    }
 }
 
 void CreateBin(std::string name, std::string amiiboid, std::string loc)
@@ -153,18 +163,18 @@ void Utils::GenerateAmiibos()
     std::string file_loc;
     char hex[20];
     for (auto it = m_amiibomap.begin(); it != m_amiibomap.end(); it++)
-	{
-		printf("ID %llX\n", it->first);
+    {
+        printf("ID %llX\n", it->first);
         mkdir(loc.c_str(), 0777);
         sprintf(hex, "%016llX", it->first);
         file_loc = loc + hex;
         mkdir(file_loc.c_str(), 0777);
-		for(auto pair : it->second)
+        for(auto pair : it->second)
         {
             std::string id = std::get<1>(pair).substr(2);
-			CreateBin(std::get<0>(pair), id, file_loc);
+            CreateBin(std::get<0>(pair), id, file_loc);
         }
-	}
+    }
     return;
 }
 
