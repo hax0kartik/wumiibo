@@ -132,6 +132,7 @@ void NFC::DisplayError(const char *str)
     Draw_ClearFramebuffer();
     Draw_DrawString(120, 10, COLOR_TITLE, "Wumiibo Menu");
     Draw_DrawString(15, 20, COLOR_WHITE, str);
+    Draw_FlushFramebuffer();
     u32 key = waitInput();
 }
 
@@ -157,13 +158,13 @@ void NFC::FinishMenu()
 
 void NFC::DrawMenu(NFC *nfc)
 {
-    int size = 5;
+    int size = 3;
     Draw_DrawString(120, 10, COLOR_TITLE, "Wumiibo Menu");
     Draw_DrawString(15, 20, COLOR_WHITE, "Select a figure.");
     Draw_DrawString(15, 30, COLOR_WHITE, "Force Stop Emulation.");
     Draw_DrawString(15, 40, COLOR_WHITE, "Randomize UID(Bypass 1 use per day limit).");
-    Draw_DrawString(15, 50, COLOR_WHITE, "Signal TagInRangeEvent.");
-    Draw_DrawString(15, 60, COLOR_WHITE, "Signal TagOutOfRangeEvent.");
+    //Draw_DrawString(15, 50, COLOR_WHITE, "Signal TagInRangeEvent.");
+    //Draw_DrawString(15, 60, COLOR_WHITE, "Signal TagOutOfRangeEvent.");
     if(nfc->GetAmiibo()->HasParsed())
     {
         Draw_DrawString(10, 230, COLOR_WHITE, "Currently Emulating:");

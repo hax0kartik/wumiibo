@@ -1,6 +1,7 @@
 #include <iostream>
 #include <algorithm>
 #include <sys/stat.h>
+#include <cstdio>
 #include "picounzip.hpp"
 #include "utils.hpp"
 #include "config.hpp"
@@ -194,6 +195,38 @@ void Utils::GenerateAmiibosForTitle(u64 tid)
         CreateBin(std::get<0>(pair), id, file_loc);
     }
     return;
+}
+
+std::vector<std::pair<std::string, std::string>>& Utils::GetAmiibosForTitle(u64 tid)
+{
+    return m_amiibomap[tid];
+}
+
+void Utils::LoadAmiiboImagesForTitle(u64 tid, int page, size_t pagesize)
+{
+    printf("Function called\n");
+    m_amiiboimages.clear();
+    m_amiiboimages.shrink_to_fit();
+    for(auto sheet: m_sheets){
+        if(sheet != nullptr)
+            C2D_SpriteSheetFree(sheet);
+    }
+    m_sheets.clear();
+    m_sheets.shrink_to_fit();
+    const auto vec = m_amiibomap[tid];
+    auto size = std::min(pagesize, vec.size() - page * pagesize);
+    for(int i = page * pagesize; i < page * pagesize + size; i++)
+    {
+        const auto &pair = vec[i];
+        const std::string id = std::get<1>(pair).substr(2);
+        const std::string loc = "/3ds/wumiibo/images/" + id + ".t3x"; 
+       // printf("Name: %s\n Loading: %s\n", std::get<0>(pair).c_str(), loc.c_str());
+        auto sheet = C2D_SpriteSheetLoad(loc.c_str());
+        if(!sheet) *(u32*)__LINE__ = 0x1;
+        m_sheets.push_back(sheet);
+        auto Image = C2D_SpriteSheetGetImage(sheet, 0);
+        m_amiiboimages.push_back(Image);
+    }
 }
 
 void Utils::Reboot()

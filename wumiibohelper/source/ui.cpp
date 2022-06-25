@@ -4,7 +4,6 @@ void uiThread(void *arg)
 {
     gfxInitDefault();
     if(ui.debug) consoleInit(GFX_BOTTOM, NULL);
-    romfsInit();
     
     C3D_Init(C3D_DEFAULT_CMDBUF_SIZE);
 	C2D_Init(C2D_DEFAULT_MAX_OBJECTS);
@@ -26,17 +25,19 @@ void uiThread(void *arg)
       //  svcWaitSynchronization(ui.event, U64_MAX);
         C3D_FrameBegin(C3D_FRAME_SYNCDRAW);
 		
-        if(ui.debug == false)
+        if(ui.debug == false && ui.bottom != nullptr)
         {
             C2D_TargetClear(ui.bottom, C2D_Color32(0xec, 0xf0, 0xf1, 0xFF));
             C2D_SceneBegin(ui.bottom);
             if(ui.bot_func) ui.bot_func();
         }
 
-        C2D_TargetClear(ui.top, C2D_Color32(0xec, 0xF0, 0xf1, 0xFF));
-        C2D_SceneBegin(ui.top);
-        if(ui.top_func) ui.top_func();
-		
+        if(ui.top != nullptr)
+        {
+            C2D_TargetClear(ui.top, C2D_Color32(0xec, 0xF0, 0xf1, 0xFF));
+            C2D_SceneBegin(ui.top);
+            if(ui.top_func) ui.top_func();
+        }
         C3D_FrameEnd(0);
         
     }

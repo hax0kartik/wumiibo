@@ -29,9 +29,10 @@ static int keystrtokeyval(char *str)
 
     while(key != NULL)
     {
+        while(key[0] == ' ') key++;
         for (int i = 0; i < 12; i++)
         {
-            if(strcmp(keys[i].key, key) == 0)
+            if(strncmp(keys[i].key, key, strlen(keys[i].key)) == 0)
                 val |= keys[i].val;
         }
         key = strtok(NULL, "+");
