@@ -1,21 +1,18 @@
-#include "titles.hpp"
-#include <cstdio>
-void Titles::PopulateTitleArray()
-{
+#include "TitleManager.hpp"
+#include "smdh.hpp"
+void Utils::TitleManager::PopulateTitleList(){
     u32 readcount = 0;
     u64 gamecardid = 0;
     FS_CardType type;
     Result ret = AM_GetTitleCount(MEDIATYPE_SD, &m_count);
     if(ret != 0) return;
-    m_array = new u64[m_count + 1];
-    ret = AM_GetTitleList(&readcount, MEDIATYPE_SD, m_count, m_array);
+    m_titles = new u64[m_count + 1];
+    ret = AM_GetTitleList(&readcount, MEDIATYPE_SD, m_count, m_titles);
     if(ret != 0) return;
-    if(R_SUCCEEDED(FSUSER_GetCardType(&type)))
-    {
-        if(type == CARD_CTR && R_SUCCEEDED(AM_GetTitleList(nullptr, MEDIATYPE_GAME_CARD, 1, &gamecardid)))
-        {
+    if(R_SUCCEEDED(FSUSER_GetCardType(&type))){
+        if(type == CARD_CTR && R_SUCCEEDED(AM_GetTitleList(nullptr, MEDIATYPE_GAME_CARD, 1, &gamecardid))){
             readcount++;
-            m_array[m_count] = gamecardid;
+            m_titles[m_count] = gamecardid;
             m_gamecardid = gamecardid;
         }
     }
@@ -29,16 +26,16 @@ FS_Path fs_make_path_binary(const void* data, u32 size) {
 }
 
 void u16tou8(std::string &buf, const u16 *input, size_t bufsize) {
-	char *data = new char[bufsize];
+    char *data = new char[bufsize];
     ssize_t units = utf16_to_utf8((u8*)data, input, bufsize);
-	if (units < 0)
-		units = 0;
-	data[units] = 0;
+    if (units < 0)
+        units = 0;
+    data[units] = 0;
     buf = data;
     delete[] data;
 }
 
-void Titles::PopulateSMDHArray(uint64_t *titles, uint32_t count)
+void Utils::TitleManager::PopulateIcons(uint64_t *titles, uint32_t count)
 {
     static const u32 filepath[5] = {0x00000000, 0x00000000, 0x00000002, 0x6E6F6369, 0x00000000};
     Handle filehandle;
@@ -73,24 +70,21 @@ void Titles::PopulateSMDHArray(uint64_t *titles, uint32_t count)
     }
 }
 
-
-void Titles::ConvertSMDHsToC2D()
-{
-	m_texs.resize(m_smdhvector.size());
-	static const Tex3DS_SubTexture subt3x = {24, 24, 0.0f, 24 / 32.0f, 24 / 32.0f, 0.0f};
+void Utils::TitleManager::ConvertIconsToC2DImage(std::vector<C2D_Image> &images, std::vector<C3D_Tex*> &texs){
+    texs.resize(m_smdhvector.size());
+    static const Tex3DS_SubTexture subt3x = {24, 24, 0.0f, 24 / 32.0f, 24 / 32.0f, 0.0f};
     for(int i = 0; i < m_smdhvector.size(); i++)
     {
-        m_texs[i] = new C3D_Tex;
-	    C3D_TexInit(m_texs[i], 32, 32, GPU_RGB565);
-        u16* dest = (u16*)m_texs[i]->data + (32 - 24) * 32;
-        u16* src  = (u16*)m_smdhvector[i].data();
-	    for (int j = 0; j < 24; j += 8)
-	    {
-		    std::copy(src, src + 24 * 8, dest);
-		    src += 24 * 8;
-		    dest += 32 * 8;
-	    }
-       m_images.push_back({m_texs[i], &subt3x});
+        texs[i] = new C3D_Tex;
+        C3D_TexInit(texs[i], 32, 32, GPU_RGB565);
+        uint16_t* dest = (uint16_t*)texs[i]->data + (32 - 24) * 32;
+        uint16_t* src  = (uint16_t*)m_smdhvector[i].data();
+        for (int j = 0; j < 24; j += 8)
+        {
+            std::copy(src, src + 24 * 8, dest);
+            src += 24 * 8;
+            dest += 32 * 8;
+        }
+       images.push_back({texs[i], &subt3x});
     }
 }
-
