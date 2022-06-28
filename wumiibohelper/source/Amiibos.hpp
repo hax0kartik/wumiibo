@@ -1,5 +1,6 @@
 #pragma once
 #include <map>
+#include <array>
 
 const std::map<int, std::string> g_gamesseriesmap = {
     {0x0, "Super Smash Bros."}, {0x1, "Super Mario"},
@@ -14,4 +15,8 @@ const std::map<int, std::string> g_gamesseriesmap = {
     {0x12, "Fire Emblem"}, {0x13, "Metroid"},
     {0x14, "Others"}, {0x15, "Mega Man"},
     {0x16, "Diablo"}
+};
+
+const std::array<std::string, 3> g_type{
+    "Figure", "Card", "Yarn"
 };

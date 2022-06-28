@@ -99,9 +99,13 @@ void AmiiboSelection::OnStateEnter(App *app){
 
     /* Do this for first entry*/
     s = std::get<0>(m_amiibos[0]);
+    s+="\nType: ";
+    auto type = std::get<1>(m_amiibos[m_selected]).substr(8, 2);
+    int n = strtol(type.c_str(), nullptr, 16);
+    s+=g_type[n];
     s+="\nGame Series: ";
     auto gameseriesid = std::get<1>(m_amiibos[m_selected]).substr(14, 2);
-    int n = strtol(gameseriesid.c_str(), nullptr, 16);
+    n = strtol(gameseriesid.c_str(), nullptr, 16);
     auto pos = g_gamesseriesmap.find(n);
     if(pos != g_gamesseriesmap.end())
         s += pos->second;
@@ -157,10 +161,14 @@ std::optional<ui::States> AmiiboSelection::HandleEvent(){
     
     if(m_selected != m_oldselected){
         std::string s = std::get<0>(m_amiibos[m_selected]);
+        s+="\nType: ";
+        auto type = std::get<1>(m_amiibos[m_selected]).substr(8, 2);
+        int n = strtol(type.c_str(), nullptr, 16);
+        s+=g_type[n];
         s+="\nGame Series: ";
         auto gameseriesid = std::get<1>(m_amiibos[m_selected]).substr(14, 2);
         char *p;
-        int n = strtol(gameseriesid.c_str(), &p, 16);
+        n = strtol(gameseriesid.c_str(), &p, 16);
         auto pos = g_gamesseriesmap.find(n);
         if(pos != g_gamesseriesmap.end())
             s += pos->second;
@@ -193,7 +201,7 @@ void AmiiboSelection::RenderLoop(){
     LightLock_Unlock(&m_lock);
     C2D_ImageTint tint;
     C2D_AlphaImageTint(&tint, 1.0f);
-    C2D_DrawText(&m_extrastexts[1], 0, 160.0f, (screenheight - 15.0f) / 2, 1.0f, 0.5f, 0.5f);
+    C2D_DrawText(&m_extrastexts[1], 0, 160.0f, (screenheight - (15.0f * 3)) / 2, 1.0f, 0.5f, 0.5f);
     if((int)m_amiiboimages.size() > (m_selected % 14)){
         auto image = m_amiiboimages[m_selected % 14];
         C2D_DrawImageAt(image, 20.0f, (screenheight - image.subtex->height) / 2, 1.0f, &tint);
