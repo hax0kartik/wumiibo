@@ -1,5 +1,6 @@
 #include "Initial.hpp"
 #include "../app.hpp"
+#include "../Utils/misc.hpp"
 
 Initial::Initial(){
     LightLock_Init(&m_lock);
@@ -12,13 +13,21 @@ void Initial::OnStateEnter(App *app){
     m_textbuf = C2D_TextBufNew(1000);
     std::string str = "Initial State";
     SetString(str);
+    m_broken = false;
     worker.CreateThread([](Initial& initial, App *app) -> void{
         auto& jsonmanager = app->GetJsonManager();
         auto& titlemanager = app->GetTitleManager();
-        
-        std::string str = "Loading Data";
+        auto& downloadmanager = app->GetDownloadManager();
+
+        std::string str = "Checking if Internet is connected.";
+        if(app->IsConnected()){
+            str = "Connected.\nRetrieving data from github..";
+            initial.SetString(str);
+            downloadmanager.DownloadAmiibosJson();
+            downloadmanager.DownloadGamesIDJson();
+        }
+        str = "Loading Data..";
         initial.SetString(str);
-        
         jsonmanager.ReadAmiibosJson();
         jsonmanager.ReadGamesIDJson();
         titlemanager.PopulateTitleList();
@@ -39,7 +48,7 @@ void Initial::OnStateExit(App *app){
 }
 
 std::optional<ui::States> Initial::HandleEvent(){
-    if(worker.IsDone())
+    if(worker.IsDone() && !m_broken)
         return ui::States::MainMenu;
     return {};
 }
@@ -58,7 +67,9 @@ void Initial::RenderLoop(){
     C2D_SceneBegin(bottom);
     C2D_TargetClear(bottom, C2D_Color32(0xEC, 0xF0, 0xF1, 0xFF));
     ui::Elements::DrawBars(ui::Screen::Bottom);
-    auto y = (ui::Dimensions::GetHeight() - 15.0f) / 2;
+    auto height = 0.0f, width = 0.0f;
+    C2D_TextGetDimensions(&m_text, 0.5f, 0.5f, &width, &height);
+    auto y = (ui::Dimensions::GetHeight() - height) / 2;
     LightLock_Lock(&m_lock);
     C2D_DrawText(&m_text, C2D_AlignCenter, 160.0f, y, 1.0f, 0.5f, 0.5f);
     LightLock_Unlock(&m_lock);

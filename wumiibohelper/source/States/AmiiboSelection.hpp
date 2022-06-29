@@ -21,10 +21,11 @@ class AmiiboSelection : public ui::State{
         auto& GetPage() { return m_page; };
         auto& GetQueue() { return m_queue; };
         auto& GetAmiiboImages() {return m_amiiboimages; };
+        auto& GetAmiiboSprites() {return m_amiibosprites; };
         void SetString(const std::string &str);
     private:
         int m_page = 0, m_prevpage = 0;
-        int m_selected = 0, m_oldselected = 0;
+        int m_selected = 0;
         int m_done = 0;
         std::vector<std::pair<std::string, std::string>> m_amiibos;
         LightEvent m_event;
@@ -36,7 +37,10 @@ class AmiiboSelection : public ui::State{
         std::vector<C2D_Text> m_optiontexts;
         std::vector<C2D_Text> m_pagestexts;
         std::vector<C2D_Text> m_extrastexts;
+        std::vector<C2D_Text> m_gameseriestext;
+        std::vector<C2D_Text> m_amiibotypetext;
         std::vector<C2D_Image> m_amiiboimages;
+        std::vector<C2D_SpriteSheet> m_amiibosprites;
         WorkerThread<AmiiboSelection&, App*> worker;  /* ImageLoaderThread */
         WorkerThread<AmiiboSelection&, App*> worker1; /* BinGeneratorThread */
 };

@@ -4,13 +4,18 @@
 #include "../Amiibos.hpp"
 #include "../Utils/Misc.hpp"
 
-
 static void LoadImagesThread(AmiiboSelection& amiiboselection, App *app){
     auto tid = app->GetTitle();
     auto& amiibos = app->GetJsonManager().GetAmiibosForTitles(tid);
     while(!amiiboselection.IsDone()){
         LightEvent_Wait(amiiboselection.GetImageThreadEvent());
         auto& amiiboimages = amiiboselection.GetAmiiboImages();
+        auto& amiibosprites = amiiboselection.GetAmiiboSprites();
+        for(auto& sprite : amiibosprites){
+            if(sprite)
+                C2D_SpriteSheetFree(sprite);
+        }
+        amiibosprites = {};
         amiiboimages.clear();
         amiiboimages.shrink_to_fit();
         auto& page = amiiboselection.GetPage();
@@ -18,10 +23,11 @@ static void LoadImagesThread(AmiiboSelection& amiiboselection, App *app){
         auto entry = page * 14;
         for(int i = entry; i < entry + size; i++){
             auto id = std::get<1>(amiibos[i]).substr(2);
-            auto loc = "/3ds/wumiibo/images/" + id + ".t3x";
+            auto loc = "romfs:/images/" + id + ".t3x";
             auto sheet = C2D_SpriteSheetLoad(loc.c_str());
             auto image = C2D_SpriteSheetGetImage(sheet, 0);
             amiiboimages.push_back(image);
+            amiibosprites.push_back(sheet);
         }
     }
 }
@@ -69,8 +75,9 @@ AmiiboSelection::~AmiiboSelection(){
 void AmiiboSelection::OnStateEnter(App *app){
     m_page = 0;
     m_prevpage = 0;
-    m_selected = 0, m_oldselected = -1;
+    m_selected = 0;
     m_done = false;
+    hidSetRepeatParameters(10, 20);
     
     auto tid = app->GetTitle();
     m_amiibos = app->GetJsonManager().GetAmiibosForTitles(tid);
@@ -91,28 +98,26 @@ void AmiiboSelection::OnStateEnter(App *app){
         i++;
     }while(i < m_pagestexts.size());
 
-    /* Select an amiibo + Amiibo Name + Series + Type */
+    /* Select an amiibo + Amiibo Name + Type + Series */
     m_extrastexts.resize(4);
     std::string s = "Select an amiibo:";
     C2D_TextParse(&m_extrastexts[0], m_textbuf, s.c_str());
     C2D_TextOptimize(&m_extrastexts[0]);
 
-    /* Do this for first entry*/
-    s = std::get<0>(m_amiibos[0]);
-    s+="\nType: ";
-    auto type = std::get<1>(m_amiibos[m_selected]).substr(8, 2);
-    int n = strtol(type.c_str(), nullptr, 16);
-    s+=g_type[n];
-    s+="\nGame Series: ";
-    auto gameseriesid = std::get<1>(m_amiibos[m_selected]).substr(14, 2);
-    n = strtol(gameseriesid.c_str(), nullptr, 16);
-    auto pos = g_gamesseriesmap.find(n);
-    if(pos != g_gamesseriesmap.end())
-        s += pos->second;
-    else 
-        s += gameseriesid;
-    C2D_TextParse(&m_extrastexts[1], m_textbuf, s.c_str());
-    C2D_TextOptimize(&m_extrastexts[1]);
+    /* -- */
+    m_gameseriestext.resize(g_gamesseriesmap.size());
+    for(int i = 0; i < g_gamesseriesmap.size(); i++){
+        s = "Game Series: " + g_gamesseriesmap[i];
+        C2D_TextParse(&m_gameseriestext[i], m_textbuf, s.c_str());
+        C2D_TextOptimize(&m_gameseriestext[i]);
+    }
+    m_amiibotypetext.resize(g_type.size());
+    for(int i = 0; i < g_type.size(); i++){
+        s = "Type: " + g_type[i];
+        C2D_TextParse(&m_amiibotypetext[i], m_textbuf, s.c_str());
+        C2D_TextOptimize(&m_amiibotypetext[i]);
+    }
+
     SetString(" ");
     worker.CreateThread(LoadImagesThread, *this, app, 4 * 1024 * 1024);
     worker1.CreateThread(CreateBinThread, *this, app);
@@ -142,7 +147,6 @@ void AmiiboSelection::OnStateExit(App *app){
 std::optional<ui::States> AmiiboSelection::HandleEvent(){
     uint32_t kDown = hidKeysDown();
 
-    m_oldselected = m_selected;
     if(kDown & KEY_A){
         m_queue.Enqueue(m_selected);
     }
@@ -158,25 +162,6 @@ std::optional<ui::States> AmiiboSelection::HandleEvent(){
 
     else if(m_selected > m_optiontexts.size() - 1)
         m_selected = 0;
-    
-    if(m_selected != m_oldselected){
-        std::string s = std::get<0>(m_amiibos[m_selected]);
-        s+="\nType: ";
-        auto type = std::get<1>(m_amiibos[m_selected]).substr(8, 2);
-        int n = strtol(type.c_str(), nullptr, 16);
-        s+=g_type[n];
-        s+="\nGame Series: ";
-        auto gameseriesid = std::get<1>(m_amiibos[m_selected]).substr(14, 2);
-        char *p;
-        n = strtol(gameseriesid.c_str(), &p, 16);
-        auto pos = g_gamesseriesmap.find(n);
-        if(pos != g_gamesseriesmap.end())
-            s += pos->second;
-        else 
-            s += gameseriesid;
-        C2D_TextParse(&m_extrastexts[1], m_textbuf, s.c_str());
-        C2D_TextOptimize(&m_extrastexts[1]);
-    }
 
     m_prevpage = m_page;
     m_page = m_selected / 14;
@@ -201,7 +186,14 @@ void AmiiboSelection::RenderLoop(){
     LightLock_Unlock(&m_lock);
     C2D_ImageTint tint;
     C2D_AlphaImageTint(&tint, 1.0f);
-    C2D_DrawText(&m_extrastexts[1], 0, 160.0f, (screenheight - (15.0f * 3)) / 2, 1.0f, 0.5f, 0.5f);
+    C2D_DrawText(&m_optiontexts[m_selected], 0, 160.0f, (screenheight - (15.0f * 3)) / 2, 1.0f, 0.5f, 0.5f);
+    auto type = std::get<1>(m_amiibos[m_selected]).substr(8, 2);
+    int n = strtol(type.c_str(), nullptr, 16);
+    C2D_DrawText(&m_amiibotypetext[n], 0, 160.0f, (screenheight - (15.0f * 2)) / 2 + 5.0f, 1.0f, 0.5f, 0.5f);
+    auto gameseriesid = std::get<1>(m_amiibos[m_selected]).substr(14, 2);
+    n = strtol(gameseriesid.c_str(), nullptr, 16);
+    C2D_DrawText(&m_gameseriestext[n], 0, 160.0f, (screenheight - 15.0f) / 2 + 10.0f, 1.0f, 0.5f, 0.5f);
+
     if((int)m_amiiboimages.size() > (m_selected % 14)){
         auto image = m_amiiboimages[m_selected % 14];
         C2D_DrawImageAt(image, 20.0f, (screenheight - image.subtex->height) / 2, 1.0f, &tint);

@@ -12,6 +12,9 @@ Result ui::Intialize(){
 
 void ui::Elements::Icon::Intialize(){
     C2D_SpriteSheet sheet = C2D_SpriteSheetLoad("/3ds/wumiibo/images/icon.t3x");
+    if(!sheet){
+        sheet = C2D_SpriteSheetLoad("romfs:/icon.t3x");
+    }
     m_image = C2D_SpriteSheetGetImage(sheet, 0);
 }
 

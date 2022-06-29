@@ -2,9 +2,10 @@
 #include <vector>
 #include <string>
 #include <optional>
+#include <cstdio>
 #include "../ui.hpp"
 #include "../workerthread.hpp"
-
+#include "../Utils/DownloadManager.hpp"
 class Initial : public ui::State{
     public:
         Initial();
@@ -15,10 +16,14 @@ class Initial : public ui::State{
         void RenderLoop() override;
 
         void SetString(const std::string& str);
+        void SetBroken(bool broken) { m_broken = broken; };
 
     private:
         std::string m_message;
         LightLock m_lock;
+        bool m_broken = false;
+        int64_t m_totalprog = 1;
+        int64_t m_total = 1;
         /* UI */
         C2D_TextBuf m_textbuf;
         C2D_Text m_text;
