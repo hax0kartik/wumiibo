@@ -22,8 +22,6 @@ class Initial : public ui::State{
         std::string m_message;
         LightLock m_lock;
         bool m_broken = false;
-        int64_t m_totalprog = 1;
-        int64_t m_total = 1;
         /* UI */
         C2D_TextBuf m_textbuf;
         C2D_Text m_text;

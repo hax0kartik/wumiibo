@@ -43,6 +43,10 @@ void Initial::OnStateEnter(App *app){
 }
 
 void Initial::OnStateExit(App *app){
+    /* This could occur on home menu press */
+    while(!worker.IsDone()){
+        svcSleepThread(0.05e+9);
+    }
     (void)app;
     C2D_TextBufDelete(m_textbuf);
 }

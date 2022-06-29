@@ -145,7 +145,7 @@ void AmiiboSelection::OnStateExit(App *app){
 }
 
 std::optional<ui::States> AmiiboSelection::HandleEvent(){
-    uint32_t kDown = hidKeysDown();
+    uint32_t kDown = hidKeysDown() | hidKeysDownRepeat();
 
     if(kDown & KEY_A){
         m_queue.Enqueue(m_selected);
