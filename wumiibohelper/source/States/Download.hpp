@@ -18,6 +18,7 @@ class Download : public ui::State{
     private:
         std::string m_message;
         bool m_rebootrequired;
+        bool m_fullreboot;
         LightLock m_lock;
         /* UI */
         C2D_TextBuf m_textbuf;

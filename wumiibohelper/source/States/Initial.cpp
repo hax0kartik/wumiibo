@@ -1,5 +1,6 @@
 #include "Initial.hpp"
 #include "../app.hpp"
+#include "../Utils/Misc.hpp"
 
 Initial::Initial(){
     LightLock_Init(&m_lock);

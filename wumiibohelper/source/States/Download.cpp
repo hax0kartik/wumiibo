@@ -13,6 +13,16 @@ Download::~Download(){
 void Download::OnStateEnter(App *app){
     m_textbuf = C2D_TextBufNew(500);
     std::string s;
+    if(app->IsReboot()){
+        m_fullreboot = true;
+        auto havewumiibo = Utils::Misc::CheckWumiibo();
+        if(havewumiibo)
+            s = "Download Complete. Press B to Exit the app.";
+        else
+            s = "Verification failed.\nPlease manually install the app.\nPress B to exit.";
+        SetString(s);
+        return;
+    }
     if(!app->IsConnected()){
         m_rebootrequired = false;
         s = "Not connected to Internet. Press B.";
@@ -28,6 +38,7 @@ void Download::OnStateEnter(App *app){
         downloadmanager.GetUrl("https://api.github.com/repos/hax0kartik/wumiibo/releases/latest", tmp);
         auto url = jsonmanager.ParseAndGetLatest(tmp);
         downloadmanager.DownloadAndUnzipTo(url, "/luma/titles/");
+        Utils::Misc::EnableGamePatching();
         std::string s = "Download Complete. Rebooting...";
         download.SetString(s);
         svcSleepThread(2e+9); // 2 secs
@@ -38,6 +49,10 @@ void Download::OnStateEnter(App *app){
 void Download::OnStateExit(App *app){
     (void)app;
     C2D_TextBufDelete(m_textbuf);
+    if(m_fullreboot){
+        Utils::Misc::Reboot();
+        while(1);;
+    }
     if(m_rebootrequired){
         Utils::Misc::RebootToSelf();
         while(1);;

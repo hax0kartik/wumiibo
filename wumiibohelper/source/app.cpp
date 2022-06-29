@@ -1,6 +1,7 @@
 #include <cstdio>
 #include <malloc.h>
 #include "app.hpp"
+#include "Utils/Misc.hpp"
 
 void App::Intialize(){
     gfxInitDefault();
@@ -19,7 +20,11 @@ void App::Intialize(){
         };
     }
     ui::Intialize();
-    ChangeState(ui::Initial);
+    if(Utils::Misc::IsReboot()){
+        m_reboot = true;
+        ChangeState(ui::Download);
+    } else 
+        ChangeState(ui::Initial);
 }
 
 void App::RunLoop(){

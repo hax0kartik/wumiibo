@@ -21,6 +21,7 @@ class App{
         void SetTitle(uint64_t tid) { m_currenttitle = tid; };
         uint64_t GetTitle() { return m_currenttitle; };
         bool IsConnected() { return m_connected; };
+        bool IsReboot() { return m_reboot; };
     private:
         Initial m_initial;
         MainMenu m_mainmenu;
@@ -35,4 +36,5 @@ class App{
 
         uint64_t m_currenttitle = 0;
         bool m_connected = false;
+        bool m_reboot = false;
 };
