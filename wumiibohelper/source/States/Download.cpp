@@ -15,9 +15,12 @@ void Download::OnStateEnter(App *app){
     std::string s;
     if(app->IsReboot()){
         m_fullreboot = true;
+        m_rebootrequired = false;
         auto havewumiibo = Utils::Misc::CheckWumiibo();
         if(havewumiibo)
-            s = "Download Complete. Press B to Exit the app.";
+            s = "Download Complete. Press B to Exit the app.\n" \
+            "Note: Your Real figurines will not work\n with wumiibo enabled.\n" \
+            "You can disable wumiibo to\n continue using your real figurines.";
         else
             s = "Verification failed.\nPlease manually install the app.\nPress B to exit.";
         SetString(s);
@@ -25,6 +28,7 @@ void Download::OnStateEnter(App *app){
     }
     if(!app->IsConnected()){
         m_rebootrequired = false;
+        m_fullreboot = false;
         s = "Not connected to Internet. Press B.";
         SetString(s);
         return;
@@ -48,6 +52,9 @@ void Download::OnStateEnter(App *app){
 
 void Download::OnStateExit(App *app){
     (void)app;
+    while(!worker.IsDone()){
+        svcSleepThread(0.05e+9);
+    }
     C2D_TextBufDelete(m_textbuf);
     if(m_fullreboot){
         Utils::Misc::Reboot();
@@ -61,7 +68,7 @@ void Download::OnStateExit(App *app){
 
 std::optional<ui::States> Download::HandleEvent(){
     /* We mark it as going to menu when infact we'll reboot */
-    if(worker.IsDone())
+    if(worker.IsDone() && m_rebootrequired)
         return ui::States::MainMenu;
     
     if(keysDown() & KEY_B)
@@ -83,7 +90,9 @@ void Download::RenderLoop(){
     C2D_SceneBegin(bottom);
     C2D_TargetClear(bottom, C2D_Color32(0xEC, 0xF0, 0xF1, 0xFF));
     ui::Elements::DrawBars(ui::Screen::Bottom);
-    auto y = (ui::Dimensions::GetHeight() - 15.0f) / 2;
+    auto height = 0.0f, width = 0.0f;
+    C2D_TextGetDimensions(&m_text, 0.5f, 0.5f, &width, &height);
+    auto y = (ui::Dimensions::GetHeight() - height) / 2;
     LightLock_Lock(&m_lock);
     C2D_DrawText(&m_text, C2D_AlignCenter, 160.0f, y, 1.0f, 0.5f, 0.5f);
     LightLock_Unlock(&m_lock);

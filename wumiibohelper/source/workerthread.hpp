@@ -6,7 +6,7 @@ template<typename ... Ts>
 class WorkerThread{
     public:
         WorkerThread() {
-            m_done = false;
+            m_done = true;
             m_threadhandle = nullptr;
         }
 
@@ -24,7 +24,7 @@ class WorkerThread{
 
         ~WorkerThread(){
             Join();
-            threadFree(m_threadhandle);
+            //threadFree(m_threadhandle);
         }
 
         void Join(){
@@ -46,6 +46,7 @@ class WorkerThread{
             ThreadFuncParams *params = (ThreadFuncParams*) arg;
             params->func();
             params->self->m_done = true;
+            threadFree(params->self->m_threadhandle);
             delete params;
         }
 

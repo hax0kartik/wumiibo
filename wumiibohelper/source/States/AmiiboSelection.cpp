@@ -25,6 +25,8 @@ static void LoadImagesThread(AmiiboSelection& amiiboselection, App *app){
             auto id = std::get<1>(amiibos[i]).substr(2);
             auto loc = "romfs:/images/" + id + ".t3x";
             auto sheet = C2D_SpriteSheetLoad(loc.c_str());
+            if(!sheet)
+                continue;
             auto image = C2D_SpriteSheetGetImage(sheet, 0);
             amiiboimages.push_back(image);
             amiibosprites.push_back(sheet);
@@ -77,7 +79,7 @@ void AmiiboSelection::OnStateEnter(App *app){
     m_prevpage = 0;
     m_selected = 0;
     m_done = false;
-    hidSetRepeatParameters(10, 20);
+    hidSetRepeatParameters(10, 30);
     
     auto tid = app->GetTitle();
     m_amiibos = app->GetJsonManager().GetAmiibosForTitles(tid);
@@ -119,7 +121,7 @@ void AmiiboSelection::OnStateEnter(App *app){
     }
 
     SetString(" ");
-    worker.CreateThread(LoadImagesThread, *this, app, 4 * 1024 * 1024);
+    worker.CreateThread(LoadImagesThread, *this, app,  1024 * 1024);
     worker1.CreateThread(CreateBinThread, *this, app);
     LightEvent_Signal(&m_event);
 }
@@ -130,9 +132,8 @@ void AmiiboSelection::OnStateExit(App *app){
     /* Signal the event once because thread is stuck waiting on it */
     LightEvent_Signal(&m_event); 
     /* Wait for both threads to exit */
-    while(!worker1.IsDone() && !worker.IsDone()){
-        svcSleepThread(0.5e+9);
-    }
+    worker1.Join();
+    worker.Join();
     m_optiontexts.clear();
     m_optiontexts.shrink_to_fit();
     m_extrastexts.clear();
@@ -145,7 +146,7 @@ void AmiiboSelection::OnStateExit(App *app){
 }
 
 std::optional<ui::States> AmiiboSelection::HandleEvent(){
-    uint32_t kDown = hidKeysDown() | hidKeysDownRepeat();
+    uint32_t kDown = hidKeysDown() | (hidKeysDownRepeat() & (KEY_DOWN | KEY_UP));
 
     if(kDown & KEY_A){
         m_queue.Enqueue(m_selected);

@@ -113,6 +113,7 @@ namespace Utils{
                 if(found != std::string::npos){
                     data.replace(found, s.length(), s);
                 }
+                fseek(f, 0L, SEEK_SET);
                 fwrite(&data[0], data.length(), 1, f);
                 fclose(f);
             }
