@@ -132,6 +132,9 @@ void AmiiboSelection::OnStateExit(App *app){
     /* Signal the event once because thread is stuck waiting on it */
     LightEvent_Signal(&m_event); 
     /* Wait for both threads to exit */
+    //while(!(worker.IsDone() && worker1.IsDone())){
+      //  svcSleepThread(0.005e+9);
+    //}
     worker1.Join();
     worker.Join();
     m_optiontexts.clear();

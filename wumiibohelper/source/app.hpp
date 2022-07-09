@@ -14,6 +14,7 @@ class App{
     public:
         void Intialize();
         void RunLoop();
+        void Finalize();
         void ChangeState(auto newstate);
         auto& GetTitleManager(){ return m_titlemanager; };
         auto& GetJsonManager(){ return m_jsonmanager; };

@@ -10,6 +10,7 @@ void App::Intialize(){
     acInit();
     gdbHioDevInit();
     gdbHioDevRedirectStdStreams(true, true, true);
+    //aptSetHomeAllowed(false);
     uint32_t status = 0;
     ACU_GetStatus(&status);
     if(status == 3){
@@ -25,6 +26,12 @@ void App::Intialize(){
         ChangeState(ui::Download);
     } else 
         ChangeState(ui::Initial);
+}
+
+void App::Finalize(){
+    acExit();
+    amExit();
+    gfxExit();
 }
 
 void App::RunLoop(){
