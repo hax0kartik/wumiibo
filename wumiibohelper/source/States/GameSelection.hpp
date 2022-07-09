@@ -16,6 +16,7 @@ class GameSelection : public ui::State{
         int m_selected = 0;
         int m_page = 0;
         int m_iconsconverted = 0;
+        int m_broken = false;
         std::vector<std::string> m_descriptions;
 
         /* UI */

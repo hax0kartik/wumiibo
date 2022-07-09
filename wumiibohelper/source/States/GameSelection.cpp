@@ -33,6 +33,18 @@ void GameSelection::OnStateEnter(App *app){
         C2D_TextOptimize(&m_amiibostexts[i]);
     }
 
+    if(descs.size() <= 0){
+        m_descriptiontexts.resize(1);
+        m_amiibostexts.resize(1);
+        auto str = "No Compatible Titles Found.";
+        C2D_TextParse(&m_descriptiontexts[0], m_textbuf, str);
+        C2D_TextOptimize(&m_descriptiontexts[0]);
+        str = "Press B to go back.";
+        C2D_TextParse(&m_amiibostexts[0], m_textbuf, str);
+        C2D_TextOptimize(&m_amiibostexts[0]);
+        m_broken = true;
+    }
+
     if(m_iconsconverted == 0){
         app->GetTitleManager().ConvertIconsToC2DImage(m_images, m_texs);
         m_iconsconverted = 1;
@@ -64,7 +76,7 @@ std::optional<ui::States> GameSelection::HandleEvent(){
     if(kDown & KEY_B)
         return ui::States::MainMenu;
 
-    if(kDown & KEY_A)
+    if((kDown & KEY_A) && !m_broken)
         return ui::States::AmiiboSelection;
 
     if(m_selected < 0)
