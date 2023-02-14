@@ -109,9 +109,14 @@ namespace Utils{
                 fseek(f, 0L, SEEK_SET);
                 fread(&data[0], size, 1, f);
                 const std::string s = "enable_game_patching = 1";
+                const std::string s2 = "enable_external_firm_and_modules = 1";
                 auto found = data.find("enable_game_patching");
                 if(found != std::string::npos){
                     data.replace(found, s.length(), s);
+                }
+                auto found2 = data.find("enable_external_firm_and_modules");
+                if(found2 != std::string::npos){
+                    data.replace(found2, s2.length(), s2);
                 }
                 fseek(f, 0L, SEEK_SET);
                 fwrite(&data[0], data.length(), 1, f);

@@ -226,8 +226,8 @@ AccessControlInfo:
    - ir:u
    - ir:USER
    - mic:u
-   - mcu::HWC
    - ndm:u
+   - nfc:u
    - news:s
    - nwm::EXT
    - nwm::UDS
@@ -271,7 +271,6 @@ SystemControlInfo:
     ndm: 0x0004013000002b02
     news: 0x0004013000003502
     nfc: 0x0004013000004002
-    nim: 0x0004013000002c02
     nwm: 0x0004013000002d02
     pdn: 0x0004013000002102
     ps: 0x0004013000003102
