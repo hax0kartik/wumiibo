@@ -1,4 +1,4 @@
-#include "Download.hpp" 
+#include "Download.hpp"
 #include "../app.hpp"
 #include "../Utils/Misc.hpp"
 
@@ -41,7 +41,7 @@ void Download::OnStateEnter(App *app){
         std::vector<uint8_t> tmp;
         downloadmanager.GetUrl("https://api.github.com/repos/hax0kartik/wumiibo/releases/latest", tmp);
         auto url = jsonmanager.ParseAndGetLatest(tmp);
-        downloadmanager.DownloadAndUnzipTo(url, "/luma/titles/");
+        downloadmanager.DownloadTo(url, "/luma/sysmodules", "0004013000004002.cxi");
         Utils::Misc::EnableGamePatching();
         std::string s = "Download Complete. Rebooting...";
         download.SetString(s);
@@ -61,6 +61,7 @@ void Download::OnStateExit(App *app){
         while(1);;
     }
     if(m_rebootrequired){
+        app->Finalize();
         Utils::Misc::RebootToSelf();
         while(1);;
     }
@@ -70,7 +71,7 @@ std::optional<ui::States> Download::HandleEvent(){
     /* We mark it as going to menu when infact we'll reboot */
     if(worker.IsDone() && m_rebootrequired)
         return ui::States::MainMenu;
-    
+
     if(keysDown() & KEY_B)
         return ui::States::MainMenu;
     return {};

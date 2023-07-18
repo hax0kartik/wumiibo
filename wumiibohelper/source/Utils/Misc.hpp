@@ -1,4 +1,4 @@
-#pragma once 
+#pragma once
 #include <string>
 #include <cstdio>
 #include <3ds.h>
@@ -52,12 +52,12 @@ namespace Utils{
         }
 
         static inline bool SetWumiiboState(bool newstate){
-            if(newstate == false){ // disable wumiibo 
-                if(rename("/luma/titles/0004013000004002", "/luma/titles/wumiibo") != 0)
+            if(newstate == false){ // disable wumiibo
+                if(rename("/luma/sysmodules/0004013000004002.cxi", "/luma/sysmodules/wumiibo.cxi") != 0)
                     return false;
             }
             else{
-                if(rename("/luma/titles/wumiibo", "/luma/titles/0004013000004002") != 0)
+                if(rename("/luma/sysmodules/wumiibo.cxi", "/luma/sysmodules/0004013000004002.cxi") != 0)
                     return false;
             }
             return true;
@@ -106,18 +106,17 @@ namespace Utils{
                 fseek(f, 0L, SEEK_END);
                 size_t size = ftell(f);
                 data.resize(size);
+
                 fseek(f, 0L, SEEK_SET);
                 fread(&data[0], size, 1, f);
-                const std::string s = "enable_game_patching = 1";
-                const std::string s2 = "enable_external_firm_and_modules = 1";
-                auto found = data.find("enable_game_patching");
+
+                const std::string s = "enable_external_firm_and_modules = 1";
+
+                auto found = data.find("enable_external_firm_and_modules");
                 if(found != std::string::npos){
                     data.replace(found, s.length(), s);
                 }
-                auto found2 = data.find("enable_external_firm_and_modules");
-                if(found2 != std::string::npos){
-                    data.replace(found2, s2.length(), s2);
-                }
+
                 fseek(f, 0L, SEEK_SET);
                 fwrite(&data[0], data.length(), 1, f);
                 fclose(f);

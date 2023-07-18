@@ -60,6 +60,19 @@ void Utils::DownloadManager::DownloadAndUnzipTo(const std::string &url, const st
     zip.extractall(location);
 }
 
+void Utils::DownloadManager::DownloadTo(const std::string &url, const std::string &location, const std::string &filename){
+    std::vector<uint8_t> data;
+
+    //This silently fails when location is already present
+    mkdir(location.c_str(), 0777);
+
+    const std::string finalloc = location + "/" + filename;
+    GetUrl(url, data);
+    FILE *file = fopen(finalloc.c_str(), "wb+");
+    fwrite(data.data(), data.size(), 1, file);
+    fclose(file);
+}
+
 void Utils::DownloadManager::DownloadAmiibosJson(){
     std::vector<uint8_t> tmp;
     GetUrl("https://raw.githubusercontent.com/hax0kartik/wumiibo/master/jsons/amiibos.json", tmp);

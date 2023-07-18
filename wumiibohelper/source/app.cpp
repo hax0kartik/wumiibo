@@ -1,4 +1,5 @@
 #include <cstdio>
+#include <iostream>
 #include <malloc.h>
 #include "app.hpp"
 #include "Utils/Misc.hpp"
@@ -18,13 +19,13 @@ void App::Intialize(){
         if(R_SUCCEEDED(socInit(socbuf, 0x100000))){
             m_connected = true;
             m_downloadmanager.Intialize();
-        };
+        }
     }
     ui::Intialize();
     if(Utils::Misc::IsReboot()){
         m_reboot = true;
         ChangeState(ui::Download);
-    } else 
+    } else
         ChangeState(ui::Initial);
 }
 

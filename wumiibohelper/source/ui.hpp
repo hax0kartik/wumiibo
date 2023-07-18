@@ -14,7 +14,7 @@ namespace ui
 
     enum States
     {
-        Initial, MainMenu, 
+        Initial, MainMenu,
         Download, GameSelection, ToggleState,
         AmiiboSelection
     };
@@ -58,7 +58,7 @@ namespace ui
             protected:
                 Icon() {}
             private:
-                C2D_Image m_image; 
+                C2D_Image m_image;
                 float m_alpha = 1.0f;
                 uint8_t m_effect = 0;
         };
@@ -82,4 +82,4 @@ namespace ui
 
 
     extern RenderTargets g_RenderTarget;
-};
+}

@@ -21,7 +21,7 @@ BUILD		:=	build
 SOURCES		:=	source
 DATA		:=	data
 INCLUDES	:=	include
-OUTPUTDIR   :=  0004013000004002
+TITLE		:=	0004013000004002
 
 #---------------------------------------------------------------------------------
 # options for code generation
@@ -106,8 +106,7 @@ $(BUILD):
 #---------------------------------------------------------------------------------
 clean:
 	@echo clean ...
-	@rm -fr $(BUILD) $(OUTPUT).cxi $(TARGET).elf $(TOPDIR)/$(OUTPUTDIR)
-
+	@rm -fr $(BUILD) $(TITLE).cxi $(TARGET).elf $(TOPDIR)/$(TITLE)
 
 #---------------------------------------------------------------------------------
 else
@@ -117,13 +116,9 @@ DEPENDS	:=	$(OFILES:.o=.d)
 #---------------------------------------------------------------------------------
 # main targets
 #---------------------------------------------------------------------------------
-$(TOPDIR)/$(OUTPUTDIR)/exheader.bin	: $(OUTPUT).cxi
-	@mkdir $(TOPDIR)/$(OUTPUTDIR)
-	@ctrtool --exefsdir=$(TOPDIR)/$(OUTPUTDIR) --exheader=$(TOPDIR)/$(OUTPUTDIR)/exheader.bin $(OUTPUT).cxi
-	
-
-$(OUTPUT).cxi	: $(OUTPUT).elf
+$(TOPDIR)/$(TITLE).cxi	: $(OUTPUT).elf
 	@makerom -f ncch -rsf ../Wumiibo.rsf -o $@ -elf $<
+	@echo "Built $(TITLE).cxi"
 
 $(OUTPUT).elf	:	$(OFILES)
 
