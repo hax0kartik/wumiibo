@@ -25,5 +25,5 @@ mv 0004013000004002.cxi ./0004013000004002/0004013000004002.cxi
 
 #Build helper
 cd wumiibohelper
-make clean && make -j
+make clean && make cia -j
 mv wumiibohelper.cia ../0004013000004002/wumiibohelper.cia
