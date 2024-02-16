@@ -7,8 +7,8 @@ extern "C" {
 #include "pmdbgext.h"
 }
 
-static u8 ALIGN(8) hidThreadStack[0x1000];
-static u8 ALIGN(8) threadStack[0x1000];
+static u8 CTR_ALIGN(8) hidThreadStack[0x1000];
+static u8 CTR_ALIGN(8) threadStack[0x1000];
 
 extern "C"
 {
