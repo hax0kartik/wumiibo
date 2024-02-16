@@ -93,7 +93,7 @@ extern "C"
     }
 }
 
-u8 ALIGN(8) statbuf[0x800] = {0};
+u8 CTR_ALIGN(8) statbuf[0x800] = {0};
 int main() {
 
     int nmbActiveHandles;
