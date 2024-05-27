@@ -11,19 +11,7 @@ Amiibo Emulation for 3ds.
 ## How To Use
 You need to have the latest luma for this to work correctly.
 
- * Put the `0004013000004002` folder in `luma/titles/`
- 
- * Download the amiibo you want to emulate from [here](https://hax0kartik.github.io/amiibo-generator). All this website does is produce a bin file with amiiboID in it, so the produced file can be shared freely!
-
- * Put the downloaded bins in a folder and put that folder in `sd:/wumiibo`. You can also place the bins directly inside `sd:/wumiibo`. You can have upto 49 folders and inside every folder you can have more subfolders. So if you sort your bins correctly, there is no limit on how many amiibos you can have at a time.
-
- * *Enable Game patching* & *Enable loading external FIRMs and modules* from luma menu. (As shown here: https://github.com/LumaTeam/Luma3DS/wiki/Optional-features)
- 
- * Open your game and reach to the screen where it tells you to place your amiibo.
- 
- * Press L + DOWN + START to bring up Wumiibo Menu and select the amiibo you wish to emulate.
- 
- * If everything went successfully, your amiibo should be emulated now.
+https://github.com/hax0kartik/wumiibo/wiki/Usage-guide-for-Wumiibo-and-WumiiboHelper
 
 If you want to use your real amiibos, you'll need to disable wumiibo by disabling game patching from luma menu.
 
