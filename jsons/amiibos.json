@@ -7747,7 +7747,12 @@
          "0x1f01000002550c02"
       ]
    ],
-   "teddy-together": [],
+   "teddy-together": [
+      [
+         "Teddy",
+         "0x0x0214000100e40502"
+      ]
+   ],
    "warioware-gold": [
       [
          "Blathers",
