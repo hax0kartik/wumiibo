@@ -556,7 +556,7 @@
       ],
       [
          "Daisy",
-         "0x0013000002660102"
+         "0x02f1000101450502"
       ],
       [
          "Deena",
@@ -3696,6 +3696,10 @@
       ]
    ],
    "chibi-robo-zip-lash": [
+      [
+         "Chibi Robo",
+         "0x22c00000003a0202"
+      ],
       [
          "Bowser",
          "0x0005000000140002"
@@ -7747,7 +7751,12 @@
          "0x1f01000002550c02"
       ]
    ],
-   "teddy-together": [],
+   "teddy-together": [
+      [
+         "Teddy",
+         "0x0x0214000100e40502"
+      ]
+   ],
    "warioware-gold": [
       [
          "Blathers",
