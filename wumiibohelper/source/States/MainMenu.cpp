@@ -28,11 +28,6 @@ void MainMenu::OnStateEnter(App *app){
         C2D_TextParse(&m_descriptiontexts[i], m_textbuf, m_descriptions[i].c_str());
         C2D_TextOptimize(&m_descriptiontexts[i]);
     }
-
-    std::string versionStr = "v" APP_VERSION;
-    C2D_TextParse(&m_versiontext, m_textbuf, versionStr.c_str());
-    C2D_TextOptimize(&m_versiontext);
-
 }
 
 void MainMenu::OnStateExit(App *app){
@@ -97,12 +92,4 @@ void MainMenu::RenderLoop(){
         C2D_DrawText(&m_optiontexts[i], C2D_AlignCenter, 160.0f, y, 1.0f, 0.5f, 0.5f);
         y += 30.0f;
     }
-    // Draw version string in top-right corner
-    float textWidth, textHeight;
-    C2D_TextGetDimensions(&m_versiontext, 0.5f, 0.5f, &textWidth, &textHeight);
-
-    // Adjust X so it hugs the right edge with padding
-    float versionY = 10.0f;
-    float versionX = ui::Dimensions::GetWidth(ui::Screen::Bottom) - textWidth - 10.0f;
-    C2D_DrawText(&m_versiontext, 0, versionX, versionY, 1.0f, 0.5f, 0.5f);
 }

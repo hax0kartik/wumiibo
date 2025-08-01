@@ -10,10 +10,6 @@
 #include "Utils/JsonManager.hpp"
 #include "Utils/DownloadManager.hpp"
 
-#ifndef APP_VERSION
-#define APP_VERSION "dev-build"
-#endif
-
 class App{
     public:
         void Intialize();

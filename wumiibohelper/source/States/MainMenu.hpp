@@ -22,5 +22,4 @@ class MainMenu : public ui::State{
         C2D_TextBuf m_textbuf;
         std::vector<C2D_Text> m_optiontexts;
         std::vector<C2D_Text> m_descriptiontexts;
-        C2D_Text m_versiontext;
 };
